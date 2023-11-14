@@ -93,12 +93,20 @@ int is_slash(int c) {
 	return c == '/';
 }
 
+int is_semicolon(int c) {
+	return c == ':';
+}
+
 w_index *split_slash(char *s) {
 	return cons_index(is_slash, s);
 }
 
 w_index *split_space(char *s) {
 	return cons_index(isspace, s);
+}
+
+w_index *split_semicolon(char *s) {
+	return cons_index(is_semicolon , s);
 }
 
 
