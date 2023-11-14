@@ -26,7 +26,7 @@ int main() {
                 if (morceau != NULL) {
                     cd(morceau);
                 } else {
-                    fprintf(stderr, "cd: argument manquant\n");
+                    cd(NULL);
                 }
             } else if (strcmp(morceau, "pwd") == 0) {
                 pwd();
