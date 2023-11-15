@@ -1,40 +1,52 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "internes.h"
+#include <readline/readline.h>
+#include <readline/history.h>
+
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+#include "parser.h"
 
 int main() {
-    char aRegarder[100];
 
-    while (1) {
-        printf("Entrez la commande cd avec votre chemin choisi ou pwd: ");
+	char *input;
+	w_index *index;
+	int pid;
 
-        fgets(aRegarder, sizeof(aRegarder), stdin);
+	rl_initialize();
 
-        // Supprimer le saut de ligne à la fin de la commande
-        size_t size = strlen(aRegarder);
-        if (size > 0 && aRegarder[size - 1] == '\n') {
-            aRegarder[size - 1] = '\0';
-        }
+	while(1) {
+		input = readline("> ");
+		index = split_space(input);
+		if(index->size == 0) {
+			continue;
+		} else {
+			pid = fork();
 
-        // Analysons la commande ...
-        char *morceau = strtok(aRegarder, " ");
-        if (morceau != NULL) {
-            if (strcmp(morceau, "cd") == 0) {
-                // Si la commande est "cd", appeler la fonction de changement de répertoire
-                morceau = strtok(NULL, " ");
-                if (morceau != NULL) {
-                    cd(morceau);
-                } else {
-                    cd(NULL);
-                }
-            } else if (strcmp(morceau, "pwd") == 0) {
-                pwd();
-            }
-        }
-    }
+			if(pid == 0) {
+				execvp(index->words[0], index->words);
 
-    return 0;
+				perror("Probleme");
+
+			} else {
+				int status;
+
+				waitpid(pid, &status, 0);
+
+				if (WIFEXITED(status)) {
+					char *status_str = malloc(4*sizeof(char)); // status <= 256 donc 3 char pour le nombre et 1 pour \0
+					sprintf(status_str, "%d", WEXITSTATUS(status));
+					setenv("?", status_str, 1);
+      		} else {
+         		printf("La commande s'est terminée de manière anormale\n");
+      		}
+
+			}
+		}
+	}
+
+	return 0;
 }
 
 
