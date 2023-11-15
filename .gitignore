@@ -1,5 +1,5 @@
 jsh
-
+*.nfs*
 *.DS_Store
 
 # Prerequisites
