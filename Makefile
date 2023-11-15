@@ -2,7 +2,7 @@
 
 SRC_DIR = src
 BUILD_DIR = .out
-OBJ = main.o parser.o
+OBJ = main.o internes.o parser.o
 
 build: $(OBJ)
 	gcc -g -Wall -o jsh $(OBJ:%=$(BUILD_DIR)/%)
