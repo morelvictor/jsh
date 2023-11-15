@@ -5,7 +5,7 @@ BUILD_DIR = .out
 OBJ = main.o parser.o
 
 build: $(OBJ)
-	gcc -g -Wall -o jsh $(OBJ:%=$(BUILD_DIR)/%)
+	gcc -g -Wall -o jsh $(OBJ:%=$(BUILD_DIR)/%) -lreadline
 
 run: build
 	./jsh

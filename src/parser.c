@@ -68,13 +68,14 @@ char *next_word(int (*f)(int), char *w) {
 w_index *cons_index(int (*f)(int), char *s) {
 	w_index *acc = malloc(sizeof(w_index));
 	acc->size = nbr_words(f, s);
-	acc -> words = malloc(acc->size * sizeof(char *));
+	acc->words = malloc((acc->size + 1) * sizeof(char *));
 	char *current = next_word(f, s);
 	for(int i = 0; current != NULL && i < acc->size; ++i) {
 		int pl = -1;
-		acc -> words[i] = extract_word(f, current, &pl);
+		acc->words[i] = extract_word(f, current, &pl);
 		current = next_word(f, current + pl);
 	}
+	acc->words[acc->size] = NULL;
 	return acc;
 }
 
