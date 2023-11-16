@@ -3,7 +3,8 @@
 #include <math.h>
 #include <string.h>
 #include <unistd.h>
-#include <prompt.h>
+
+#include "prompt.h"
 
 char *prompt(int jobs) {
 	char *prompt=malloc(256);
@@ -30,10 +31,3 @@ char *prompt(int jobs) {
 	return prompt;
 }
 
-int main(){
-	printf("[0]------------------------>$ \n");
-	char *p=prompt(3);
-	printf("%s\n",p);
-	free(p);
-	exit(0);
-}
