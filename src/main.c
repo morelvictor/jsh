@@ -35,6 +35,9 @@ int main() {
 			else if(strcmp(index->words[0],"pwd")==0){
 				pwd();
 				continue;
+			} else if(strcmp(index->words[0], "?") == 0) {
+				return_code();
+				continue;
 			}
 			pid = fork();
 
