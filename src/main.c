@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -8,6 +7,7 @@
 #include <sys/wait.h>
 
 #include "parser.h"
+#include "internes.h"
 
 int main() {
 
@@ -23,6 +23,18 @@ int main() {
 		if(index->size == 0) {
 			continue;
 		} else {
+			if(strcmp(index->words[0],"cd")==0){
+				if(index->size==1){
+					cd(NULL);
+				}else{
+					cd(index->words[1]);
+				}
+				continue;
+			}
+			else if(strcmp(index->words[0],"pwd")==0){
+				pwd();
+				continue;
+			}
 			pid = fork();
 
 			if(pid == 0) {
@@ -49,3 +61,6 @@ int main() {
 
 	return 0;
 }
+
+
+
