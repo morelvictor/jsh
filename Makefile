@@ -2,10 +2,10 @@
 
 SRC_DIR = src
 BUILD_DIR = .out
-OBJ = main.o internes.o parser.o
+OBJ = main.o internes.o parser.o prompt.o
 
 build: $(OBJ)
-	gcc -g -Wall -o jsh $(OBJ:%=$(BUILD_DIR)/%) -lreadline
+	gcc -g -Wall -o jsh $(OBJ:%=$(BUILD_DIR)/%) -lreadline -lm
 
 run: build
 	./jsh

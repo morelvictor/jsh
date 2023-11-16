@@ -8,6 +8,7 @@
 
 #include "parser.h"
 #include "internes.h"
+#include "prompt.h"
 
 int main() {
 
@@ -18,7 +19,7 @@ int main() {
 	rl_initialize();
 
 	while(1) {
-		input = readline("> ");
+		input = readline(prompt(0));
 		index = split_space(input);
 		if(index->size == 0) {
 			continue;
