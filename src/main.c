@@ -15,8 +15,9 @@ int main() {
 	char *input;
 	w_index *index;
 	int pid;
-
+	
 	rl_initialize();
+	rl_outstream=stderr;
 
 	while(1) {
 		input = readline(prompt(0));
