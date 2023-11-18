@@ -39,6 +39,10 @@ int main() {
 				pwd();
 			} else if(strcmp(index->words[0], "?") == 0) {
 				return_code();
+			} else if(strcmp(index->words[0], "exit") == 0) {
+				free(input);
+				free_index(index);
+				exit(0);
 			} else {
 
 				pid = fork();
