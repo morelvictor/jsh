@@ -46,3 +46,12 @@ int pwd() {
     }
 }
 
+int return_code() {
+	char *ret;
+	ret = getenv("?");
+	if(ret == NULL)
+		return 1;
+	printf("%s\n", ret);
+	return 0;
+}
+
