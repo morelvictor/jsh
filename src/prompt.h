@@ -2,5 +2,5 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-
-extern char *prompt(int);
+extern char * prompt;
+extern int update_prompt(int);

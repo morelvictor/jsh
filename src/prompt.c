@@ -6,12 +6,12 @@
 
 #include "prompt.h"
 
-char *prompt(int jobs) {
-	char *prompt=malloc(256);
+char *prompt=NULL;
+
+int update_prompt(int jobs) {
 	char *path=malloc(256);
 	if(getcwd(path,256)==NULL) {
-		perror("bla");
-		exit(1);
+		return -1;
 	}	
 	
 	int diff=0;
@@ -26,8 +26,7 @@ char *prompt(int jobs) {
 	}else{
 		sprintf(prompt,"\001\033[33m\002[%d]\001\033[36m\002%s\001\033[00m\002$ ",jobs,path);
 	}
-	
-	
-	return prompt;
+	free(path);
+	return 0;
 }
 
