@@ -10,15 +10,17 @@
 #include "prompt.h"
 
 int main() {
-
+	
 	char *input;
 	w_index *index;
 	int pid;
-	
+	extern char* prompt;
+	prompt = malloc(256);
+	int res=update_prompt(0);
 	rl_initialize();
 	rl_outstream=stderr;
 
-	while((input = readline(prompt(0))) != NULL) {
+	while((input = readline(prompt)) != NULL) {
 		add_history(input);
 		index = split_space(input);
 		if(index->size != 0) {
@@ -59,11 +61,12 @@ int main() {
 			}
 		}
 
-
+		update_prompt(0);
 		free(input);
 		free_index(index);
 	}
-
+	free(prompt);
+	clear_history();
 	return 0;
 }
 
