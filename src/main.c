@@ -29,7 +29,10 @@ int main() {
 				}
 			} else if(strcmp(index->words[0],"pwd")==0){
 				pwd();
+			} else if(strcmp(index->words[0], "?") == 0) {
+				return_code();
 			} else {
+
 				pid = fork();
 
 				if(pid == 0) {
