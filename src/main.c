@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <readline/readline.h>
 #include <readline/history.h>
-
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -20,6 +19,7 @@ int main() {
 
 	while(1) {
 		input = readline(prompt(0));
+		add_history(input);
 		index = split_space(input);
 		if(index->size == 0) {
 			continue;
@@ -52,12 +52,15 @@ int main() {
 					char *status_str = malloc(4*sizeof(char)); // status <= 256 donc 3 char pour le nombre et 1 pour \0
 					sprintf(status_str, "%d", WEXITSTATUS(status));
 					setenv("?", status_str, 1);
-      		} else {
-         		printf("La commande s'est terminée de manière anormale\n");
-      		}
+				} else {
+					printf("La commande s'est terminée de manière anormale\n");
+				}
 
 			}
 		}
+
+		free(input);
+		free_index(index);
 	}
 
 	return 0;
