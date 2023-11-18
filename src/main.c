@@ -21,6 +21,11 @@ int main() {
 	rl_outstream=stderr;
 
 	while((input = readline(prompt)) != NULL) {
+		if(res) {
+			free(input);
+			free(prompt);
+			exit(10);
+		}
 		add_history(input);
 		index = split_space(input);
 		if(index->size != 0) {
@@ -66,7 +71,6 @@ int main() {
 		free_index(index);
 	}
 	free(prompt);
-	clear_history();
 	return 0;
 }
 
