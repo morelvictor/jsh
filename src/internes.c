@@ -29,7 +29,7 @@ int cd(char *path) {
         return 0;
     } else {
         perror("chdir");
-        return 1;  
+        return 1;
     }
 }
 
