@@ -21,6 +21,18 @@ int redirect(int r, char * path){
 			fd=open(path, O_WRONLY | O_CREAT | O_APPEND, 0600);
 			if(fd!=1) dup2(fd,STDOUT_FILENO);
 			return fd;
+		case e : 
+			fd=open(path,O_WRONLY | O_CREAT | O_EXCL, 0600);
+			if(fd!=-1) dup2(fd,STDERR_FILENO);
+			return fd;
+		case f :
+			fd=open(path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+			if(fd!=-1) dup2(fd,STDERR_FILENO);
+			return fd;
+		case g : 
+			fd=open(path,O_WRONLY | O_CREAT | O_APPEND, 0600);
+			if(fd!=-1) dup2(fd, STDERR_FILENO);
+			return fd;
 		default : return -1;
 			
 	}
