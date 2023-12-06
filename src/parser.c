@@ -110,18 +110,41 @@ w_index *split_space(char *s) {
 w_index *split_semicolon(char *s) {
 	return cons_index(is_semicolon , s);
 }
-int is_redirected(w_index *pi){
+redir_index is_redirected(w_index *pi){
+	redir_index ri={.redir=-1,.indice=-1};
 	for (int i=0; i<pi->size; ++i){
-		if(strcmp(pi->words[i],"<")==0) return INPUT;
-		else if (strcmp(pi->words[i],">")==0) return NO_OVERWRITE;
-		else if (strcmp(pi->words[i],">|")==0) return OVERWRITE;
-		else if (strcmp(pi->words[i],">>")==0) return CONCAT;
-		else if (strcmp(pi->words[i],"2>")==0) return ERR_NO_OVERWRITE;
-		else if (strcmp(pi->words[i],"2>|")==0) return ERR_OVERWRITE;
-		else if (strcmp(pi->words[i],"2>>")==0) return ERR_CONCAT;
+		ri.indice=i;
+		if(strcmp(pi->words[i],"<")==0){
+			ri.redir=INPUT;
+			return ri;
+		}
+		else if (strcmp(pi->words[i],">")==0){
+			ri.redir=NO_OVERWRITE;
+			return ri;
+		}
+		else if (strcmp(pi->words[i],">|")==0){
+			ri.redir=OVERWRITE;
+			return ri;
+		}
+		else if (strcmp(pi->words[i],">>")==0){
+			ri.redir=CONCAT;
+			return ri;
+		}
+		else if (strcmp(pi->words[i],"2>")==0){
+			ri.redir=ERR_NO_OVERWRITE;
+			return ri;
+		}
+		else if (strcmp(pi->words[i],"2>|")==0){
+			ri.redir=ERR_OVERWRITE;
+			return ri;
+		}
+		else if (strcmp(pi->words[i],"2>>")==0){
+			ri.redir=ERR_CONCAT;
+			return ri;
+		}
 		
 	}
-	return -1;
+	return ri;
 
 }
 /*int main(){
