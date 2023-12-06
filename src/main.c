@@ -29,7 +29,7 @@ int main() {
 		add_history(input);
 		index = split_space(input);
 		if(index->size != 0) {
-			int ret_code;
+			int ret_code = -1;
 			if(strcmp(index->words[0],"cd")==0){
 				if(index->size==1){
 					ret_code = cd(NULL);
