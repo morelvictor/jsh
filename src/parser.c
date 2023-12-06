@@ -1,5 +1,6 @@
 #include "parser.h"
 
+
 void free_index(w_index *pi) {
 	for(size_t i = 0; i < pi->size; ++i) {
 		free(pi->words[i]);

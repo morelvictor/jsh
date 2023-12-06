@@ -1,7 +1,5 @@
 #include "redirections.h"
 
-enum redir {INPUT,NO_OVERWRITE, OVERWRITE, CONCAT, ERR_NO_OVERWRITE, ERR_OVERWRITE, ERR_CONCAT, PIPE, SUBSTITUTION};
-
 int redirect(int redir_type, char * path){
 	int fd;
 	switch(redir_type){

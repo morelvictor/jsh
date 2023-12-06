@@ -5,6 +5,19 @@
 #include <stdlib.h>
 #include <fcntl.h>
 
-int redirect(int,char *);
+enum redir {
+	INPUT,
+	NO_OVERWRITE,
+	OVERWRITE,
+	CONCAT,
+	ERR_NO_OVERWRITE,
+	ERR_OVERWRITE,
+	ERR_CONCAT,
+	PIPE,
+	SUBSTITUTION
+};
+	
+
+extern int redirect(int,char *);
 
 #endif
