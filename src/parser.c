@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "redirections.h"
 
 
 void free_index(w_index *pi) {
@@ -106,9 +107,34 @@ w_index *split_slash(char *s) {
 w_index *split_space(char *s) {
 	return cons_index(isspace, s);
 }
-
 w_index *split_semicolon(char *s) {
 	return cons_index(is_semicolon , s);
 }
+int is_redirected(w_index *pi){
+	for (int i=0; i<pi->size; ++i){
+		if(strcmp(pi->words[i],"<")==0) return INPUT;
+		else if (strcmp(pi->words[i],">")==0) return NO_OVERWRITE;
+		else if (strcmp(pi->words[i],">|")==0) return OVERWRITE;
+		else if (strcmp(pi->words[i],">>")==0) return CONCAT;
+		else if (strcmp(pi->words[i],"2>")==0) return ERR_NO_OVERWRITE;
+		else if (strcmp(pi->words[i],"2>|")==0) return ERR_OVERWRITE;
+		else if (strcmp(pi->words[i],"2>>")==0) return ERR_CONCAT;
+		
+	}
+	return -1;
+
+}
+/*int main(){
+
+	w_index *pi=split_space("ls src > fic");
+	w_index *pi_sub=sub_index(pi,0,1);
+	print_index(pi);
+	puts("");
+	print_index(pi_sub);
+	free_index(pi);
+	free_index(pi_sub);
+	exit(0);
+
+}*/
 
 
