@@ -116,48 +116,49 @@ redir_index is_redirected(w_index *pi){
 		ri.indice=i;
 		if(strcmp(pi->words[i],"<")==0){
 			ri.redir=INPUT;
-			return ri;
+			break;
 		}
 		else if (strcmp(pi->words[i],">")==0){
 			ri.redir=NO_OVERWRITE;
-			return ri;
+			break;
 		}
 		else if (strcmp(pi->words[i],">|")==0){
 			ri.redir=OVERWRITE;
-			return ri;
+			break;
 		}
 		else if (strcmp(pi->words[i],">>")==0){
 			ri.redir=CONCAT;
-			return ri;
+			break;
 		}
 		else if (strcmp(pi->words[i],"2>")==0){
 			ri.redir=ERR_NO_OVERWRITE;
-			return ri;
+			break;
 		}
 		else if (strcmp(pi->words[i],"2>|")==0){
 			ri.redir=ERR_OVERWRITE;
-			return ri;
+			break;
 		}
 		else if (strcmp(pi->words[i],"2>>")==0){
 			ri.redir=ERR_CONCAT;
-			return ri;
+			break;
 		}
 		
 	}
 	return ri;
-
 }
+/*int is_redirection_valid(int size, int indice){
+TODO : si l'indice du symbole de redirection est en position 0 : syntaxe invalide/too few arguments (dans le projet)
+sinon, s'il y a plus d'1 mot apres le symbole de redirection : too many arguments
+sinon : LA SYNTAXE est correcte (ce qui n'exclu pas que exec echoue  par la suite)
+}*/
 /*int main(){
 
-	w_index *pi=split_space("ls src > fic");
-	w_index *pi_sub=sub_index(pi,0,1);
-	print_index(pi);
-	puts("");
-	print_index(pi_sub);
+	w_index *pi=split_space("ls > fic");
+	redir_index ri=is_redirected(pi);
+	printf("redirection de type %d en position %d\n",ri.redir,ri.indice);
 	free_index(pi);
-	free_index(pi_sub);
 	exit(0);
 
-}*/
-
+}
+*/
 

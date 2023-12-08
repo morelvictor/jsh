@@ -28,6 +28,10 @@ int main() {
 		}
 		add_history(input);
 		index = split_space(input);
+		/*redir = is_redirected(index);
+		if yes : is_valid
+		if yes : redirect
+		!!! penser a sauvegarder les descripteurs 0 1 et 2 pour remettre a la normale apres la redirection*/
 		if(index->size != 0) {
 			int ret_code;
 			if(strcmp(index->words[0],"cd")==0){
