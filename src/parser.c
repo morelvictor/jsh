@@ -146,19 +146,25 @@ redir_index is_redirected(w_index *pi){
 	}
 	return ri;
 }
+
+int is_redirection_valid(int size, int indice){
+	if (size <=2 /*minimum 3 composantes*/ || indice != size-2 /*+ d'1 mot apres la redir*/) return 0; 
+	else return 1;
+}
 /*int is_redirection_valid(int size, int indice){
-TODO : si l'indice du symbole de redirection est en position 0 : syntaxe invalide/too few arguments (dans le projet)
+si l'indice du symbole de redirection est en position 0 : syntaxe invalide/too few arguments (dans le projet)
 sinon, s'il y a plus d'1 mot apres le symbole de redirection : too many arguments
 sinon : LA SYNTAXE est correcte (ce qui n'exclu pas que exec echoue  par la suite)
 }*/
+
 /*int main(){
 
-	w_index *pi=split_space("ls > fic");
+	w_index *pi=split_space("ls lala lala lalal > fic");
 	redir_index ri=is_redirected(pi);
 	printf("redirection de type %d en position %d\n",ri.redir,ri.indice);
+	printf("%d\n", is_redirection_valid(pi->size, ri.indice));
 	free_index(pi);
 	exit(0);
 
-}
-*/
+}*/
 
