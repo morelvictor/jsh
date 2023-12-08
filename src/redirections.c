@@ -39,14 +39,14 @@ int redirect(int redir_type, char * path){
 et vérifier que la valeur de retour de redirect n est pas -1, 
 si c est -1, ne pas exec la ligne de commande et envoyer le code de retour 1 */
 
-int main(void){
+/*int main(void){
 	redirect(NO_OVERWRITE,"fic");
 	execlp("ls","ls",NULL);
-	/*int fd =open("fic",O_WRONLY | O_CREAT,0600);
+	int fd =open("fic",O_WRONLY | O_CREAT,0600);
 	dup2(fd,STDOUT_FILENO);
 	write(STDOUT_FILENO, "jana", 4);
 	close(fd);
-	write(STDOUT_FILENO, "ayadi", 5);*/
+	write(STDOUT_FILENO, "ayadi", 5);
 	exit(0);
-}
+}*/
 

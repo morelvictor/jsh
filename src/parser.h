@@ -30,5 +30,6 @@ extern w_index *split_semicolon(char *);
 extern w_index *reverse(w_index *);
 extern w_index *sub_index(w_index *, size_t, size_t);
 extern redir_index is_redirected(w_index *);
+extern int is_redirection_valid(int,int);
 
 #endif
