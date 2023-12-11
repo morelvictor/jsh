@@ -18,12 +18,16 @@ int main() {
 	w_index *current;
 	w_index *index;
 	w_index *sub;
+	redir_index ri;
 	int pid;
 	extern char* prompt;
 	prompt = malloc(256);
 	int res=update_prompt(0);
 	rl_initialize();
 	rl_outstream=stderr;
+	//index = split_space(input);
+	//w_index * index2=split_space("je suis jana");
+
 
 	while((input = readline(prompt)) != NULL) {
 		if(res) {
@@ -32,14 +36,9 @@ int main() {
 			exit(10);
 		}
 		add_history(input);
-		//printf("0\n");
 		index = split_space(input);
-		//printf("1\n");
-		redir_index ri = is_redirected(index);
-		//printf("%d\n",ri.redir);
-		//printf("ici\n");
+		ri = is_redirected(index);
 		if (ri.redir!=-1){
-			//printf("là\n");
 			if(is_redirection_valid(index->size,ri.indice)){
 				sub=sub_index(index,0,ri.indice);
 				current=sub;
@@ -47,13 +46,10 @@ int main() {
 			}
 			
 		}else{
-			//printf("2\n");
 			current=index;
 		}
-		//printf("3\n");
 
 					
-
 		if(current->size != 0) {
 			int ret_code;
 			if(strcmp(current->words[0],"cd")==0){
@@ -72,6 +68,7 @@ int main() {
 				exit_code = (current->size == 2) ? atoi(current->words[1]) : last == NULL ? 20 : atoi(last);
 				free(input);
 				free_index(current);
+				if(ri.redir != -1) free_index(index);
 				exit(exit_code);
 			} else {
 
@@ -103,9 +100,11 @@ int main() {
 		dup2(in,0);
 		dup2(out,1);
 		dup2(err_out,2);
+		//peut mieux faire ici, mieux que remettre les 3 (2 sont inutiles)
 		update_prompt(0);
 		free(input);
 		free_index(current);
+		if(ri.redir != -1) free_index(index);
 	}
 	free(prompt);
 	char *last = getenv("?");

@@ -84,11 +84,12 @@ w_index *cons_index(int (*f)(int), char *s) {
 w_index *sub_index(w_index *i, size_t deb, size_t fin) {
   w_index *acc = malloc(sizeof(w_index));
   acc->size = fin-deb;
-  acc->words = malloc(acc->size * sizeof(char *));
+  acc->words = malloc((acc->size +1) * sizeof(char *));
   for(int x = 0; x < acc->size; ++x) {
     acc->words[x] = malloc((strlen(i->words[x + deb]) + 1) * sizeof(char));
     strcpy(acc->words[x], i->words[x + deb]);
   }
+	acc->words[acc->size]= NULL;
   return acc;
 }
 
