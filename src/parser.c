@@ -150,7 +150,10 @@ redir_index is_redirected(w_index *pi){
 
 int is_redirection_valid(int size, int indice){
 	if (size <=2 /*minimum 3 composantes*/ || indice != size-2 /*+ d'1 mot apres la redir*/) return 0; 
-	else return 1;
+	/*char *fic_name = pi->word[pi->size-1];
+	for(int i=0; i<strlen(fic_name); ++i){
+	}*/
+	return 1;
 }
 /*int is_redirection_valid(int size, int indice){
 si l'indice du symbole de redirection est en position 0 : syntaxe invalide/too few arguments (dans le projet)

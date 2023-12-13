@@ -25,8 +25,6 @@ int main() {
 	int res=update_prompt(0);
 	rl_initialize();
 	rl_outstream=stderr;
-	//index = split_space(input);
-	//w_index * index2=split_space("je suis jana");
 
 
 	while((input = readline(prompt)) != NULL) {
@@ -42,7 +40,18 @@ int main() {
 			if(is_redirection_valid(index->size,ri.indice)){
 				sub=sub_index(index,0,ri.indice);
 				current=sub;
-				redirect(ri.redir,index->words[index->size-1]);
+				int nb=redirect(ri.redir,index->words[index->size-1]);
+				if(nb==-1) {
+					free_index(sub);
+					free_index(index);
+					free(input);
+					continue;	
+				}
+				
+			} else {
+				free_index(index);
+				free(input);
+				continue;
 			}
 			
 		}else{
