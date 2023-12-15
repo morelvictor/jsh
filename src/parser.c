@@ -111,6 +111,31 @@ w_index *split_space(char *s) {
 w_index *split_semicolon(char *s) {
 	return cons_index(is_semicolon , s);
 }
+/*int is_chevron(char *s){
+	if(strcmp(pi->words[i],"<")==0){
+		return INPUT;
+	}
+	else if (strcmp(pi->words[i],">")==0){
+		return NO_OVERWRITE;
+	}
+	else if (strcmp(pi->words[i],">|")==0){
+		return OVERWRITE;
+	}
+	else if (strcmp(pi->words[i],">>")==0){
+		return CONCAT;
+	}
+	else if (strcmp(pi->words[i],"2>")==0){
+		return ERR_NO_OVERWRITE;
+	}
+	else if (strcmp(pi->words[i],"2>|")==0){
+		return ERR_OVERWRITE;
+	}
+	else if (strcmp(pi->words[i],"2>>")==0){
+		return ERR_CONCAT
+	}
+	return -1;
+	
+}*/
 redir_index is_redirected(w_index *pi){
 	redir_index ri={.redir=-1,.indice=-1};
 	for (int i=0; i<pi->size; ++i){
@@ -147,6 +172,31 @@ redir_index is_redirected(w_index *pi){
 	}
 	return ri;
 }
+/*redir_index is_redirected(w_index *pi){
+	redir_index ri={.redir=-1,.indice=-1};
+	for(int i=0; i<pi->size; ++i){
+		int res=is_chevron(pi->words[i]);
+		if(res!=-1){
+			ri.redir=res;
+			ri.indice=i;
+			return ri;
+		}
+	}
+	return ri;
+
+}*/
+/*enum {DONE,SYNTAX_ERROR,FAILED};
+int is_redirection_valid(w_index *pi){
+	redir_index ri=is_redirected(pi);
+	int alt=ri.indice%2;
+	for(int i=ri.indice; i<pi->size; ++i){
+		int res=is_chevron(pi->words[i]);
+		if(res!=-1){
+			if(i%2!=alt || i=pi->size-1) return SYNTAX_ERROR;
+			
+	}
+
+}*/
 
 int is_redirection_valid(int size, int indice){
 	if (size <=2 /*minimum 3 composantes*/ || indice != size-2 /*+ d'1 mot apres la redir*/) return 0; 
