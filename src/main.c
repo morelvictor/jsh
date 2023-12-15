@@ -28,6 +28,7 @@ int main() {
 
 
 	while((input = readline(prompt)) != NULL) {
+		int ret_code=0;
 		if(res) {
 			free(input);
 			free(prompt);
@@ -42,16 +43,20 @@ int main() {
 				current=sub;
 				int nb=redirect(ri.redir,index->words[index->size-1]);
 				if(nb==-1) {
-					free_index(sub);
-					free_index(index);
-					free(input);
-					continue;	
+					//free_index(sub);
+					//free_index(index);
+					//free(input);
+					//continue;
+					ret_code = 1;
+					goto end_loop;
 				}
 				
 			} else {
-				free_index(index);
-				free(input);
-				continue;
+				//free_index(index);
+				//free(input);
+				ret_code=1;
+				//continue;
+				goto end_loop;
 			}
 			
 		}else{
@@ -60,7 +65,6 @@ int main() {
 
 					
 		if(current->size != 0) {
-			int ret_code;
 			if(strcmp(current->words[0],"cd")==0){
 				if(current->size==1){
 					ret_code = cd(NULL);
@@ -102,6 +106,7 @@ int main() {
 
 				}
 			}
+end_loop:
 			char buff[8];
 			sprintf(buff, "%d", ret_code);
 			setenv("?", buff, 1);

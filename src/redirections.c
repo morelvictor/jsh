@@ -40,7 +40,8 @@ et vérifier que la valeur de retour de redirect n est pas -1,
 si c est -1, ne pas exec la ligne de commande et envoyer le code de retour 1 */
 
 /*int main(void){
-	redirect(NO_OVERWRITE,"fic");
+	int fd=redirect(NO_OVERWRITE,1,"fic1");
+	int fd2=redirect(NO_OVERWRITE,fd,"fic2");
 	execlp("ls","ls",NULL);
 	int fd =open("fic",O_WRONLY | O_CREAT,0600);
 	dup2(fd,STDOUT_FILENO);
