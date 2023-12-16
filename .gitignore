@@ -1,4 +1,5 @@
 jsh
+*.swp
 *.nfs*
 *.DS_Store
 

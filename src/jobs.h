@@ -1,6 +1,7 @@
 #ifndef JOBS_H
 #define JOBS_H
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <sys/wait.h>
@@ -8,36 +9,32 @@
 
 #define MAX_JOBS 500
 
-enum State {
-		Running,
-		Stopped,
-		Detached,
-		Killed,
-		Done
-	};
+typedef enum state {
+	DONE,
+	KILLED,
+	DETACHED,
+	STOPPED,
+	RUNNING
+} state;
 
-typedef enum State state;
+typedef struct process {
+	struct process *next;
+	pid_t pid;
+	int status; //-1 tant que il a pas été initialisé
+	char *command;
+} process;
 
-struct Process {
-	struct Process *next;	/* Next process in the pipeline.  A circular chain. */
-	pid_t pid;					/* Process ID. */
-	int running;				/* Non-zero if this process is running. */
-	char *command;				/* The particular program that is running. */
-};
 
-typedef struct Process process;
+typedef struct job {
+	int id;
+	int pgid;
+	process *pipeline;
+	state state;
+	char *cmd;
+} job;
 
-struct Job {
-		int id;
-		int pgrp;
-//		process *pipe;			/* En prévision des pipes */
-		state st;
-		char cmd[260];
-	};
-
-typedef struct Job job;
-
-int update(job *);
-int print_jobs(job *, int *, ...);
+int launch_job()
+int update_jobs(job **, int);
+int print_jobs(job **, int);
 
 #endif
