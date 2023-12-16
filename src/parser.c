@@ -159,31 +159,31 @@ int redirect(int redir_type, char * path){
 	int fd;
 	switch(redir_type){
 		case INPUT : 
-			fd=open(path,O_RDONLY,0600);
+			fd=open(path,O_RDONLY);
 			if(fd!=-1) dup2(fd,STDIN_FILENO);
 			return fd;
 		case NO_OVERWRITE : 
-			fd=open(path,O_WRONLY | O_CREAT | O_EXCL,0600);
+			fd=open(path,O_WRONLY | O_CREAT | O_EXCL,0644);
 			if(fd!=-1)dup2(fd,STDOUT_FILENO);
 			return(fd);
 		case OVERWRITE :
-			fd=open(path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+			fd=open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 			if(fd!=-1) dup2(fd,STDOUT_FILENO);
 			return(fd);
 		case CONCAT : 
-			fd=open(path, O_WRONLY | O_CREAT | O_APPEND, 0600);
+			fd=open(path, O_WRONLY | O_CREAT | O_APPEND, 0644);
 			if(fd!=1) dup2(fd,STDOUT_FILENO);
 			return fd;
 		case ERR_NO_OVERWRITE : 
-			fd=open(path,O_WRONLY | O_CREAT | O_EXCL, 0600);
+			fd=open(path,O_WRONLY | O_CREAT | O_EXCL, 0644);
 			if(fd!=-1) dup2(fd,STDERR_FILENO);
 			return fd;
 		case ERR_OVERWRITE :
-			fd=open(path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+			fd=open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 			if(fd!=-1) dup2(fd,STDERR_FILENO);
 			return fd;
 		case ERR_CONCAT : 
-			fd=open(path,O_WRONLY | O_CREAT | O_APPEND, 0600);
+			fd=open(path,O_WRONLY | O_CREAT | O_APPEND, 0644);
 			if(fd!=-1) dup2(fd, STDERR_FILENO);
 			return fd;
 		default : return -1;
@@ -224,7 +224,7 @@ int is_chevron(char *s){
 // -1 : FAILED
 int check_redirection(w_index *pi){
 	int i,j,res;
-	
+	if(pi->size==0) return -3;
 	for(i=0; i<pi->size; ++i){
 		res=is_chevron(pi->words[i]);
 		if(res!=-1) break;
@@ -251,7 +251,7 @@ int check_redirection(w_index *pi){
 	//int fd=open("jesuispala",O_RDWR);
 	//if(fd==-1) write(1,"message dans stdout\n",20);
 	//close(fd);
-	w_index *pi=split_space("ls fic1 fic2");
+	w_index *pi=split_space("");
 	int nb=check_redirection(pi);
 	printf("%d\n",nb);
 	//free_index(pi);
