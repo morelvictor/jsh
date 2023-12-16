@@ -1,5 +1,6 @@
 #include "parser.h"
 #include "redirections.h"
+#include <unistd.h>
 
 
 void free_index(w_index *pi) {
@@ -111,31 +112,7 @@ w_index *split_space(char *s) {
 w_index *split_semicolon(char *s) {
 	return cons_index(is_semicolon , s);
 }
-/*int is_chevron(char *s){
-	if(strcmp(pi->words[i],"<")==0){
-		return INPUT;
-	}
-	else if (strcmp(pi->words[i],">")==0){
-		return NO_OVERWRITE;
-	}
-	else if (strcmp(pi->words[i],">|")==0){
-		return OVERWRITE;
-	}
-	else if (strcmp(pi->words[i],">>")==0){
-		return CONCAT;
-	}
-	else if (strcmp(pi->words[i],"2>")==0){
-		return ERR_NO_OVERWRITE;
-	}
-	else if (strcmp(pi->words[i],"2>|")==0){
-		return ERR_OVERWRITE;
-	}
-	else if (strcmp(pi->words[i],"2>>")==0){
-		return ERR_CONCAT
-	}
-	return -1;
-	
-}*/
+
 redir_index is_redirected(w_index *pi){
 	redir_index ri={.redir=-1,.indice=-1};
 	for (int i=0; i<pi->size; ++i){
@@ -172,7 +149,42 @@ redir_index is_redirected(w_index *pi){
 	}
 	return ri;
 }
-/*redir_index is_redirected(w_index *pi){
+
+int is_redirection_valid(int size, int indice){
+	if (size <=2 || indice != size-2) return 0; 
+	return 1;
+}
+
+
+
+
+/*int is_chevron(char *s){
+	if(strcmp(s,"<")==0){
+		return INPUT;
+	}
+	else if (strcmp(s,">")==0){
+		return NO_OVERWRITE;
+	}
+	else if (strcmp(s,">|")==0){
+		return OVERWRITE;
+	}
+	else if (strcmp(s,">>")==0){
+		return CONCAT;
+	}
+	else if (strcmp(s,"2>")==0){
+		return ERR_NO_OVERWRITE;
+	}
+	else if (strcmp(s,"2>|")==0){
+		return ERR_OVERWRITE;
+	}
+	else if (strcmp(s,"2>>")==0){
+		return ERR_CONCAT;
+	}
+	return -1;
+	
+}
+
+redir_index is_redirected(w_index *pi){
 	redir_index ri={.redir=-1,.indice=-1};
 	for(int i=0; i<pi->size; ++i){
 		int res=is_chevron(pi->words[i]);
@@ -184,41 +196,47 @@ redir_index is_redirected(w_index *pi){
 	}
 	return ri;
 
-}*/
-/*enum {DONE,SYNTAX_ERROR,FAILED};
-int is_redirection_valid(w_index *pi){
-	redir_index ri=is_redirected(pi);
-	int alt=ri.indice%2;
-	for(int i=ri.indice; i<pi->size; ++i){
-		int res=is_chevron(pi->words[i]);
-		if(res!=-1){
-			if(i%2!=alt || i=pi->size-1) return SYNTAX_ERROR;
-			
+}
+// -2 : SYNTAX_ERROR
+// -1 : FAILED
+int check_redirection(w_index *pi){
+	int i,j;
+
+	for(i=0; i<pi->size; ++i){
+		if(is_chevron(pi->words[i])!=-1) break;
 	}
 
-}*/
+	if(i==0 || i==pi->size-1) return -2;
+	int alt=i%2;
+	for(j=i; j<pi->size; ++j){
+		int res=is_chevron(pi->words[j]);
+		if(res==-1){
+			if(j%2==alt) return -2;
+		}else{
+			if(j%2!=alt || j==pi->size-1) return -2;
+			int nb=redirect(res,pi->words[j+1]); //ben non imagine y a une erreur sur j+1
+			if(nb==-1) return -1;
+		}		
+	}
+	return i;
 
-int is_redirection_valid(int size, int indice){
-	if (size <=2 /*minimum 3 composantes*/ || indice != size-2 /*+ d'1 mot apres la redir*/) return 0; 
-	/*char *fic_name = pi->word[pi->size-1];
-	for(int i=0; i<strlen(fic_name); ++i){
-	}*/
-	return 1;
 }
-/*int is_redirection_valid(int size, int indice){
-si l'indice du symbole de redirection est en position 0 : syntaxe invalide/too few arguments (dans le projet)
-sinon, s'il y a plus d'1 mot apres le symbole de redirection : too many arguments
-sinon : LA SYNTAXE est correcte (ce qui n'exclu pas que exec echoue  par la suite)
-}*/
 
-/*int main(){
-
-	w_index *pi=split_space("ls lala lala lalal > fic");
-	redir_index ri=is_redirected(pi);
-	printf("redirection de type %d en position %d\n",ri.redir,ri.indice);
-	printf("%d\n", is_redirection_valid(pi->size, ri.indice));
+int main(){
+	//int fd=open("jesuispala",O_RDWR);
+	//if(fd==-1) write(1,"message dans stdout\n",20);
+	//close(fd);
+	w_index *pi=split_space("ls > fic1 > fic2");
+	check_redirection(pi);
 	free_index(pi);
-	exit(0);
+	char *args[]={"ls",NULL};
+	execvp("ls",args);
+	perror("execvp");
+	
+	exit(1);
 
 }*/
+
+
+
 
