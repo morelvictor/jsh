@@ -33,8 +33,8 @@ typedef struct job {
 	char *cmd;
 } job;
 
-int launch_job()
 int update_jobs(job **, int);
 int print_jobs(job **, int);
+int launch_job();
 
 #endif

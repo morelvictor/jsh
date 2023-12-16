@@ -97,3 +97,6 @@ int update_jobs(job **jobs, int size) {
 	return 0;
 }
 
+int launch_job() {
+	return -1;
+}
