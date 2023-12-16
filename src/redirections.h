@@ -18,6 +18,6 @@ enum redir {
 };
 	
 
-extern int redirect(int,char *);
+//extern int redirect(int,char *);
 
 #endif

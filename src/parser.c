@@ -155,10 +155,45 @@ int is_redirection_valid(int size, int indice){
 	return 1;
 }
 
+int redirect(int redir_type, char * path){
+	int fd;
+	switch(redir_type){
+		case INPUT : 
+			fd=open(path,O_RDONLY,0600);
+			if(fd!=-1) dup2(fd,STDIN_FILENO);
+			return fd;
+		case NO_OVERWRITE : 
+			fd=open(path,O_WRONLY | O_CREAT | O_EXCL,0600);
+			if(fd!=-1)dup2(fd,STDOUT_FILENO);
+			return(fd);
+		case OVERWRITE :
+			fd=open(path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+			if(fd!=-1) dup2(fd,STDOUT_FILENO);
+			return(fd);
+		case CONCAT : 
+			fd=open(path, O_WRONLY | O_CREAT | O_APPEND, 0600);
+			if(fd!=1) dup2(fd,STDOUT_FILENO);
+			return fd;
+		case ERR_NO_OVERWRITE : 
+			fd=open(path,O_WRONLY | O_CREAT | O_EXCL, 0600);
+			if(fd!=-1) dup2(fd,STDERR_FILENO);
+			return fd;
+		case ERR_OVERWRITE :
+			fd=open(path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+			if(fd!=-1) dup2(fd,STDERR_FILENO);
+			return fd;
+		case ERR_CONCAT : 
+			fd=open(path,O_WRONLY | O_CREAT | O_APPEND, 0600);
+			if(fd!=-1) dup2(fd, STDERR_FILENO);
+			return fd;
+		default : return -1;
+			
+	}
+}
 
 
 
-/*int is_chevron(char *s){
+int is_chevron(char *s){
 	if(strcmp(s,"<")==0){
 		return INPUT;
 	}
@@ -184,29 +219,19 @@ int is_redirection_valid(int size, int indice){
 	
 }
 
-redir_index is_redirected(w_index *pi){
-	redir_index ri={.redir=-1,.indice=-1};
-	for(int i=0; i<pi->size; ++i){
-		int res=is_chevron(pi->words[i]);
-		if(res!=-1){
-			ri.redir=res;
-			ri.indice=i;
-			return ri;
-		}
-	}
-	return ri;
-
-}
+// -3 : NO_REDIRECTION
 // -2 : SYNTAX_ERROR
 // -1 : FAILED
 int check_redirection(w_index *pi){
-	int i,j;
-
+	int i,j,res;
+	
 	for(i=0; i<pi->size; ++i){
-		if(is_chevron(pi->words[i])!=-1) break;
+		res=is_chevron(pi->words[i]);
+		if(res!=-1) break;
 	}
 
-	if(i==0 || i==pi->size-1) return -2;
+	if(i==0 || (i==pi->size-1 && res!=-1)) return -2;
+	if(i==pi->size && res==-1) return -3;
 	int alt=i%2;
 	for(j=i; j<pi->size; ++j){
 		int res=is_chevron(pi->words[j]);
@@ -222,18 +247,19 @@ int check_redirection(w_index *pi){
 
 }
 
-int main(){
+/*int main(){
 	//int fd=open("jesuispala",O_RDWR);
 	//if(fd==-1) write(1,"message dans stdout\n",20);
 	//close(fd);
-	w_index *pi=split_space("ls > fic1 > fic2");
-	check_redirection(pi);
-	free_index(pi);
-	char *args[]={"ls",NULL};
-	execvp("ls",args);
-	perror("execvp");
+	w_index *pi=split_space("ls fic1 fic2");
+	int nb=check_redirection(pi);
+	printf("%d\n",nb);
+	//free_index(pi);
+	//char *args[]={"ls",NULL};
+	//execvp("ls",args);
+	//perror("execvp");
 	
-	exit(1);
+	exit(0);
 
 }*/
 

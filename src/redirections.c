@@ -1,6 +1,6 @@
 #include "redirections.h"
 
-int redirect(int redir_type, char * path){
+/*int redirect(int redir_type, char * path){
 	int fd;
 	switch(redir_type){
 		case INPUT : 
@@ -34,10 +34,7 @@ int redirect(int redir_type, char * path){
 		default : return -1;
 			
 	}
-}
-/*appeler avant l'appel a exec si le parser a detecte une redirection dans l index
-et vérifier que la valeur de retour de redirect n est pas -1, 
-si c est -1, ne pas exec la ligne de commande et envoyer le code de retour 1 */
+}*/
 
 /*int main(void){
 	int fd=redirect(NO_OVERWRITE,1,"fic1");

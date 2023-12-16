@@ -31,5 +31,8 @@ extern w_index *reverse(w_index *);
 extern w_index *sub_index(w_index *, size_t, size_t);
 extern redir_index is_redirected(w_index *);
 extern int is_redirection_valid(int,int);
+extern int is_chevron(char *);
+extern int check_redirection(w_index *);
+extern int redirect(int,char *);
 
 #endif

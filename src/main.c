@@ -19,7 +19,7 @@ int main() {
 	w_index *index;
 	w_index *sub;
 	redir_index ri;
-	int pid;
+	int pid/*,nb*/;
 	extern char* prompt;
 	prompt = malloc(256);
 	int res=update_prompt(0);
@@ -36,6 +36,16 @@ int main() {
 		}
 		add_history(input);
 		index = split_space(input);
+		/*current=index;
+		nb=check_redirection(index);
+		if(nb==-2 || nb== -1) {
+			ret_code=1;
+			goto end_loop;
+		}
+		if(nb>=0){
+			sub=sub_index(index,0,nb);
+			current=sub;
+		}*/
 		ri = is_redirected(index);
 		if (ri.redir!=-1){
 			if(is_redirection_valid(index->size,ri.indice)){
@@ -43,19 +53,12 @@ int main() {
 				current=sub;
 				int nb=redirect(ri.redir,index->words[index->size-1]);
 				if(nb==-1) {
-					//free_index(sub);
-					//free_index(index);
-					//free(input);
-					//continue;
 					ret_code = 1;
 					goto end_loop;
 				}
 				
 			} else {
-				//free_index(index);
-				//free(input);
 				ret_code=1;
-				//continue;
 				goto end_loop;
 			}
 			
@@ -81,6 +84,7 @@ int main() {
 				exit_code = (current->size == 2) ? atoi(current->words[1]) : last == NULL ? 20 : atoi(last);
 				free(input);
 				free_index(current);
+				//if(nb>0) free_index(index);
 				if(ri.redir != -1) free_index(index);
 				exit(exit_code);
 			} else {
@@ -118,6 +122,7 @@ end_loop:
 		update_prompt(0);
 		free(input);
 		free_index(current);
+		//if(nb>0) free_index(index);
 		if(ri.redir != -1) free_index(index);
 	}
 	free(prompt);
