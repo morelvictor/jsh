@@ -161,34 +161,36 @@ int redirect(int redir_type, char * path){
 		case INPUT : 
 			fd=open(path,O_RDONLY);
 			if(fd!=-1) dup2(fd,STDIN_FILENO);
-			return fd;
+			break;
 		case NO_OVERWRITE : 
 			fd=open(path,O_WRONLY | O_CREAT | O_EXCL,0644);
 			if(fd!=-1)dup2(fd,STDOUT_FILENO);
-			return(fd);
+			break;
 		case OVERWRITE :
 			fd=open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 			if(fd!=-1) dup2(fd,STDOUT_FILENO);
-			return(fd);
+			break;
 		case CONCAT : 
 			fd=open(path, O_WRONLY | O_CREAT | O_APPEND, 0644);
 			if(fd!=1) dup2(fd,STDOUT_FILENO);
-			return fd;
+			break;
 		case ERR_NO_OVERWRITE : 
 			fd=open(path,O_WRONLY | O_CREAT | O_EXCL, 0644);
 			if(fd!=-1) dup2(fd,STDERR_FILENO);
-			return fd;
+			break;
 		case ERR_OVERWRITE :
 			fd=open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 			if(fd!=-1) dup2(fd,STDERR_FILENO);
-			return fd;
+			break;
 		case ERR_CONCAT : 
 			fd=open(path,O_WRONLY | O_CREAT | O_APPEND, 0644);
 			if(fd!=-1) dup2(fd, STDERR_FILENO);
-			return fd;
+			break;
 		default : return -1;
 			
 	}
+	if(fd!=-1) close(fd);
+	return fd;
 }
 
 
