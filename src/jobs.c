@@ -1,5 +1,7 @@
 #include "jobs.h"
 
+#include "parser.h"
+
 const char * str_of_state(state st) {
 	switch(st){
 		case RUNNING: return "Running";
@@ -118,6 +120,7 @@ void launch_process(process *p, int pgid, int fg, w_index *index) {
 	signal (SIGTTOU, SIG_DFL);
 	signal (SIGCHLD, SIG_DFL);
 	*/
+	check_redirection(index);
 	execvp(index->words[0], index->words);
 	perror("execvp");
 	exit(234);

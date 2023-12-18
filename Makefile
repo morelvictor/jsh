@@ -2,7 +2,7 @@
 
 SRC_DIR = src
 BUILD_DIR = .out
-OBJ = $(BUILD_DIR)/main.o $(BUILD_DIR)/internes.o $(BUILD_DIR)/parser.o $(BUILD_DIR)/prompt.o $(BUILD_DIR)/jobs.o $(BUILD_DIR)/shell.o
+OBJ = $(BUILD_DIR)/main.o $(BUILD_DIR)/internes.o $(BUILD_DIR)/parser.o $(BUILD_DIR)/prompt.o $(BUILD_DIR)/jobs.o $(BUILD_DIR)/shell.o $(BUILD_DIR)/redirections.o
 
 build: $(OBJ)
 	gcc -g -Wall -o jsh $(OBJ) -lreadline -lm
