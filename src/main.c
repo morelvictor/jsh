@@ -8,17 +8,23 @@
 #include "parser.h"
 #include "internes.h"
 #include "prompt.h"
+#include "jobs.h"
+#include "shell.h"
+
 
 int main() {
+
+
+	job **jobs = calloc(MAX_JOBS, sizeof(job *));
 	
 	char *input;
 	w_index *index;
-	int pid;
 	extern char* prompt;
 	prompt = malloc(256);
 	int res=update_prompt(0);
 	rl_initialize();
 	rl_outstream=stderr;
+	init_shell();
 
 	while((input = readline(prompt)) != NULL) {
 		if(res) {
@@ -47,27 +53,20 @@ int main() {
 				free(input);
 				free_index(index);
 				exit(exit_code);
+			} else if(strcmp(index->words[0], "jobs") == 0) {
+				ret_code = print_jobs(jobs);
 			} else {
-
-				pid = fork();
-
-				if(pid == 0) {
-					execvp(index->words[0], index->words);
-
-					perror("Probleme");
-					exit(1);
-
-				} else {
-					int status;
-
+				int status;
+				int fg = 1;
+				int pid = exec_command(input, index, fg, jobs);
+				if(fg) {
 					waitpid(pid, &status, 0);
-
 					if (WIFEXITED(status)) {
 						ret_code = WEXITSTATUS(status);
 					} else {
 						printf("La commande s'est terminée de manière anormale\n");
 					}
-
+					//tcsetpgrp(STDIN_FILENO, getpid());
 				}
 			}
 			char buff[8];
@@ -80,6 +79,7 @@ int main() {
 		free_index(index);
 	}
 	free(prompt);
+	free(jobs);
 	char *last = getenv("?");
 	return last == NULL ? 0 : atoi(last);
 }
