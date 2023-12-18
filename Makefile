@@ -13,6 +13,10 @@ run: build
 clean:
 	rm -f $(BUILD_DIR)/*.o jsh
 
+test:
+	-./test.sh
+	killall logsig
+
 deps:
 	gcc -MM src/*.c
 

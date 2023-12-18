@@ -119,6 +119,7 @@ void launch_process(process *p, int pgid, int fg, w_index *index) {
 	signal (SIGCHLD, SIG_DFL);
 	*/
 	execvp(index->words[0], index->words);
+	perror("execvp");
 	exit(234);
 }
 
