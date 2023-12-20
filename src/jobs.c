@@ -1,5 +1,5 @@
 #include "jobs.h"
-
+#include "redirections.h"
 #include "parser.h"
 
 const char * str_of_state(state st) {
@@ -120,7 +120,7 @@ void launch_process(process *p, int pgid, int fg, w_index *index) {
 	signal (SIGTTOU, SIG_DFL);
 	signal (SIGCHLD, SIG_DFL);
 	*/
-	check_redirection(index);
+	//check_redirection(index);
 	execvp(index->words[0], index->words);
 	perror("execvp");
 	exit(234);
@@ -167,4 +167,22 @@ int exec_command(char *cmd, w_index *index, int fg, job **jobs) {
 		}
 	}
 	exit(252);
+}
+
+void free_process(process *p){
+	if(p->next!=NULL) free_process(p->next);
+	free(p->cmd);
+	free(p);
+}
+
+void free_job(job *j){
+	free_process(j->pipeline);
+	free(j);
+}
+
+void free_jobs(job **jobs){
+	for(int i=0; i<MAX_JOBS; ++i){
+		if(jobs[i]!=NULL) free_job(jobs[i]);
+	}
+	free(jobs);
 }

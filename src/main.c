@@ -102,7 +102,8 @@ end_loop:
 		if(nb>0) free_index(index);
 	}
 	free(prompt);
-	free(jobs);
+	free_jobs(jobs);
+	//free(jobs);
 	char *last = getenv("?");
 	return last == NULL ? 0 : atoi(last);
 }
