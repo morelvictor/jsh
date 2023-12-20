@@ -23,7 +23,6 @@ int main() {
 	w_index *current;
 	w_index *index;
 	w_index *sub;
-	//redir_index ri;
 	int nb;
 	extern char* prompt;
 	prompt = malloc(256);
@@ -52,26 +51,7 @@ int main() {
 			sub=sub_index(index,0,nb);
 			current=sub;
 		}
-		/*ri = is_redirected(index);
-		if (ri.redir!=-1){
-			if(is_redirection_valid(index->size,ri.indice)){
-				sub=sub_index(index,0,ri.indice);
-				current=sub;
-				int nb=redirect(ri.redir,index->words[index->size-1]);
-				if(nb==-1) {
-					ret_code = 1;
-					goto end_loop;
-				}
-				
-			} else {
-				ret_code=1;
-				goto end_loop;
-			}
-			
-		}else{
-			current=index;
-		}*/
-
+		
 		if(current->size != 0) {
 			if(strcmp(current->words[0],"cd")==0){
 				if(current->size==1){
@@ -90,7 +70,6 @@ int main() {
 				free(input);
 				free_index(current);
 				if(nb>0) free_index(index);
-				//if(ri.redir != -1) free_index(index);
 				exit(exit_code);
 			} else if(strcmp(index->words[0], "jobs") == 0) {
 				ret_code = print_jobs(jobs);
@@ -121,7 +100,6 @@ end_loop:
 		free(input);
 		free_index(current);
 		if(nb>0) free_index(index);
-		//if(ri.redir != -1) free_index(index);
 	}
 	free(prompt);
 	free(jobs);

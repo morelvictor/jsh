@@ -13,11 +13,6 @@ struct w_index {
 	size_t size;
 	char **words;
 };
-struct redir_index {
-	int redir;
-	int indice;
-};
-
 typedef struct w_index w_index;
 typedef struct redir_index redir_index;
 
@@ -29,10 +24,5 @@ extern w_index *split_slash(char *);
 extern w_index *split_semicolon(char *);
 extern w_index *reverse(w_index *);
 extern w_index *sub_index(w_index *, size_t, size_t);
-extern redir_index is_redirected(w_index *);
-extern int is_redirection_valid(int,int);
-extern int is_chevron(char *);
-extern int check_redirection(w_index *);
-extern int redirect(int,char *);
 
 #endif
