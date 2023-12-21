@@ -132,7 +132,10 @@ int main() {
 				} else {
 					signal=(index->words[1][1]=='\0')? (index->words[1][1]- '0') : ((index->words[1][1] - '0') * 10 + (index->words[1][2] - '0'));
 
-		
+					if(index->words[2][0]!='%'){
+                                                target=atoi(index->words[2]);
+						job_or_not=0;
+
                                         } else if(index->words[2][0] == '%' && isdigit(index->words[2][1])){
                                                 
                                         } else {
