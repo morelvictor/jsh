@@ -108,7 +108,7 @@ int main() {
         				return 1;
     				}
 
-
+			} else if(strcmp(index->words[0], "kill")==0) {
 
 
 			} else if(strcmp(index->words[0], "jobs") == 0) {
