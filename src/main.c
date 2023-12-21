@@ -30,6 +30,9 @@ int main() {
 	init_shell();
 	jobs = calloc(MAX_JOBS, sizeof(job *));
 	int fg = 1;
+
+	setenv("?", "0", 1);
+
 	while((input = readline(prompt)) != NULL) {
 		int ret_code=0;
 		if(res) {

@@ -112,14 +112,12 @@ int check_redirection(w_index *pi){
 
 	if(i==0 || (i==pi->size-1 && res!=-1)) return -2;
 	if(i==pi->size && res==-1) return -3;
-	int alt=i%2;
 	for(j=i; j<pi->size; ++j){
 		int res=is_chevron(pi->words[j]);
-		if(res==-1){
-			if(j%2==alt) return -2;
-		}else{
-			if(j%2!=alt || j==pi->size-1) return -2;
-			int nb=redirect(res,pi->words[j+1]); //ben non imagine y a une erreur sur j+1
+		if(res!=-1){
+			if(j==pi->size-1) return -2;
+			if(is_chevron(pi->words[j+1])!=-1) return -2;
+			int nb=redirect(res,pi->words[j+1]);
 			if(nb==-1) return -1;
 		}
 	}
