@@ -106,7 +106,10 @@ int main() {
 
     				} else {
         			//erreur
-        	
+				    	printf("Usage: exit [val]\n");
+        				free_index(index);
+        				return 1;
+
     				}
 
 
