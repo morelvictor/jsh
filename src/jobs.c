@@ -107,6 +107,7 @@ int update_job(job **jobs, job *job, int id) {
 	}
 	if((st & 0b101000) == 0b101000) {
 		job->state = KILLED;
+		remove_job(jobs, job);
 		return 0;
 	}
 	if((st & 0b000110) == 0b000110) {
@@ -141,7 +142,7 @@ void launch_process(process *p, int pgid, int fg, w_index *index) {
 	if(pgid == 0) pgid = pid;
 	setpgid(pid, pgid);
 	if(fg) {
-		//		tcsetpgrp(STDIN_FILENO, pgid);
+				tcsetpgrp(STDIN_FILENO, pgid);
 	}
 	/*
 	   signal (SIGINT, SIG_DFL);
@@ -231,7 +232,7 @@ void free_jobs(job **jobs){
 }
 
 
-int are_jobs_running() {
+int are_jobs_running(job **jobs) {
     for (int i = 0; i < MAX_JOBS; ++i) {
         if (jobs[i] != NULL) {
             if (jobs[i]->state == RUNNING || jobs[i]->state == STOPPED) {

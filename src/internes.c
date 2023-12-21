@@ -1,6 +1,5 @@
 #include "internes.h"
 
-
 int cd(char *path) {
     char *nouv;
 
@@ -54,19 +53,19 @@ int return_code() {
 
 
 //c est la fonction pour kill
-void send_signal(int signal, int target, int job_or_not){
+void send_signal(job** jobs,int signal, int target, int job_or_not){
 	if (job_or_not==1) {//envoie du signal au job de num target
-        	if (kill(-jobs[target]->pgid, signal) == -1) {
-            		perror("kill");
-            		exit(EXIT_FAILURE);
-        	}
-        	printf("signal %d à tous les processus du job %d\n", signal, target);//pour tester
+		if(jobs[target-1]!=NULL){
+        		if (kill(-jobs[target-1]->pgid, signal) == -1) {
+            			perror("kill");
+            			exit(EXIT_FAILURE);
+        		}
+		}
 	} else if (job_or_not==0){
 		if(kill(target, signal) == -1) {
 			perror("kill");
 			exit(EXIT_FAILURE);
         	}
-        	printf("signal %d au processus du %d\n", signal, target);
 	} else {
         	fprintf(stderr, "La cible est invalide : %d\n", target);
         	exit(EXIT_FAILURE);

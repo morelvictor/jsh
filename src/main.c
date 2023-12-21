@@ -29,10 +29,9 @@ int main() {
 	rl_outstream=stderr;
 	init_shell();
 	jobs = calloc(MAX_JOBS, sizeof(job *));
-
+	int fg = 1;
 	while((input = readline(prompt)) != NULL) {
 		int ret_code=0;
-		int fg = 1;
 		if(res) {
 			free(input);
 			free(prompt);
@@ -71,26 +70,16 @@ int main() {
 				ret_code = pwd();
 			} else if(strcmp(current->words[0], "?") == 0) {
 				ret_code = return_code();
-			/*} else if(strcmp(current->words[0], "exit") == 0) {
-				int exit_code = -1;
-				char *last = getenv("?");
-				exit_code = (current->size >= 2) ? atoi(current->words[1]) : last == NULL ? 0 : atoi(last);
-				free(input);
-				free_index(current);
-				if(nb>0) free_index(index);
-				exit(exit_code);*/
-
-
 			} else if(strcmp(index->words[0], "exit") == 0){
 
 				// Vérifier si des jobs sont en cours d'exécution ou suspendus
-   		 		if (are_jobs_running()) {
+   		 		if (are_jobs_running(jobs)) {
         				printf("Des jobs sont en cours d'exécution. Impossible de exit.\n");
         				free_index(index);
         				return 1;
     				}
 
-    				if (index->size == 1) {
+    				if (current->size == 1) {
         			// Pas d'argument pour exit, terminer le shell
         				char *last = getenv("?");
         				int value = atoi(last);
@@ -98,14 +87,12 @@ int main() {
         				exit(value);
     				} else if (index->size == 2) {
         			// terminer le shell avec la valeur de retour spécifiée
-        				int value = atoi(index->words[1]);
+        				int value = atoi(current->words[1]);
         				free_index(index);
         				exit(value);
     				} else {
         			//erreur
-        				printf("Usage: exit [val]\n");
-        				free_index(index);
-        				return 1;
+        				goto end_loop;
     				}
 
 
@@ -115,32 +102,33 @@ int main() {
 				int signal;
 				int target;
 				int job_or_not=1;
+
+				if (index->size<2 || index->size>3){
+					goto end_loop;
+				}
 				if(index->size==2){
 					signal=SIGTERM;
 					if(index->words[1][0]!='%'){
 						target=atoi(index->words[1]);
 						job_or_not=0;
-					} else if (index->words[1][0] == '%' && isdigit(index->words[1][1])) {
-						memmove(index->words[1], index->words[1] + 1, strlen(index->words[1]));
-						target = atoi(index->words[1]);
 					} else {
-    						fprintf(stderr, "syntaxe incorrecte");
+						//memmove(index->words[1], index->words[1] + 1, strlen(index->words[1]));
+						//target = atoi(index->words[1]);
+						target=atoi(index->words[1]+1);
 					}
-
 				} else {
-					signal=(index->words[1][1]=='\0')? (index->words[1][1]- '0') : ((index->words[1][1] - '0') * 10 + (index->words[1][2] - '0'));
-
+				//	signal=(index->words[1][1]=='\0')? (index->words[1][1]- '0') : ((index->words[1][1] - '0') * 10 + (index->words[1][2] - '0'));
+					signal= atoi(index->words[1]+1);
 					if(index->words[2][0]!='%'){
                                                 target=atoi(index->words[2]);
 						job_or_not=0;
-                                        } else if(index->words[2][0] == '%' && isdigit(index->words[2][1])){
-                                                memmove(index->words[2], index->words[2]+ 1, strlen(index->words[2]));
-                                                target = atoi(index->words[1]);
                                         } else {
-                                                fprintf(stderr, "syntaxe incorrecte");
-					}
+                                               // memmove(index->words[2], index->words[2]+ 1, strlen(index->words[2]));
+                                               // target = atoi(index->words[2]);
+						target=atoi(index->words[2]+1);
+                               		}
 				}
-				send_signal(signal, target, job_or_not);
+				send_signal(jobs, signal, target, job_or_not);
 
 
 

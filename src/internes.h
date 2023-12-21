@@ -1,6 +1,7 @@
 #ifndef INTERNES_H
 #define INTERNES_H
 
+#include "jobs.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -10,6 +11,6 @@
 extern int cd(char *path);
 extern int pwd();
 extern int return_code();
-extern void send_signal(int signal, int target, int job_or_not);
+extern void send_signal(job **jobs, int signal, int target, int job_or_not);
 
 #endif
