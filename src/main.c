@@ -108,6 +108,9 @@ int main() {
         				return 1;
     				}
 
+
+
+
 			} else if(strcmp(index->words[0], "kill")==0) {
 				int signal;
 				int target;
@@ -115,9 +118,13 @@ int main() {
 				if(index->size==2){
 					signal=SIGTERM;
 					if(index->words[1][0]!='%'){
-						
+						target=atoi(index->words[1]);
+						job_or_not=0;
+
 					} else if (index->words[1][0] == '%' && isdigit(index->words[1][1])) {
-						
+						memmove(index->words[1], index->words[1] + 1, strlen(index->words[1]));
+						target = atoi(index->words[1]);
+
 					} else {
     						fprintf(stderr, "syntaxe incorrecte");
 					}
