@@ -79,6 +79,14 @@ int main() {
 				free_index(current);
 				if(nb>0) free_index(index);
 				exit(exit_code);*/
+
+
+			} else if(strcmp(index->words[0], "exit") == 0){
+
+
+
+
+
 			} else if(strcmp(index->words[0], "jobs") == 0) {
 				ret_code = print_jobs(jobs);
 			} else {
