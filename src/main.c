@@ -71,14 +71,14 @@ int main() {
 				ret_code = pwd();
 			} else if(strcmp(current->words[0], "?") == 0) {
 				ret_code = return_code();
-			} else if(strcmp(current->words[0], "exit") == 0) {
+			/*} else if(strcmp(current->words[0], "exit") == 0) {
 				int exit_code = -1;
 				char *last = getenv("?");
 				exit_code = (current->size >= 2) ? atoi(current->words[1]) : last == NULL ? 0 : atoi(last);
 				free(input);
 				free_index(current);
 				if(nb>0) free_index(index);
-				exit(exit_code);
+				exit(exit_code);*/
 			} else if(strcmp(index->words[0], "jobs") == 0) {
 				ret_code = print_jobs(jobs);
 			} else {
