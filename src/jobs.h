@@ -33,6 +33,7 @@ typedef struct process {
 
 typedef struct job {
 	int pgid;
+	int fg;
 	process *pipeline;
 	state state;
 	char *cmd;
@@ -44,5 +45,6 @@ int exec_command(char *, w_index *, int, job **);
 void free_process(process *);
 void free_job(job *);
 void free_jobs(job **);
+int count_jobs(job **);
 
 #endif

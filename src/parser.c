@@ -112,5 +112,24 @@ w_index *split_space(char *s) {
 w_index *split_semicolon(char *s) {
 	return cons_index(is_semicolon , s);
 }
+char * concat(w_index *pi){
+	int len=0;
+	for(int i=0; i<pi->size; ++i){
+		len+=strlen(pi->words[i]);
+	}
+	char *s=malloc((len+pi->size)*sizeof(char));
+	int acc=0;
+	for(int i=0; i<pi->size; ++i){
+		strcpy(s+acc,pi->words[i]);
+		acc+=strlen(pi->words[i]);
+		if(i==pi->size-1) continue;
+		strcpy(s+acc," ");
+		++acc;
+		
+	}
+	*(s+len+pi->size-1)='\0';
+	return s;
+	
+}
 
 

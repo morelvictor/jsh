@@ -14,7 +14,7 @@ const char * str_of_state(state st) {
 }
 
 int print_job(job *job, int id) {
-	printf("[%d] %d\t%s\t%s\n", id, job->pgid, str_of_state(job->state), job->cmd);
+	fprintf(stderr, "[%d]\t%d\t%s\t%s\n", id, job->pgid, str_of_state(job->state), job->cmd);
 	return 0;
 }
 
@@ -27,51 +27,82 @@ int print_jobs(job **jobs) {
 	return 0;
 }
 
+
+int count_jobs(job **jobs) {
+	int acc = 0;
+	for(int i = 0; i < MAX_JOBS; i++) {
+		if(jobs[i] != NULL)
+			++ acc;
+	}
+	return acc;
+}
+
 int update_pipeline(process *pipeline) {
 	for(process *curr = pipeline; curr != NULL; curr = curr->next){
-		if(WIFEXITED(curr->status) || WIFSIGNALED(curr->status)) {
-			int status;
-			switch(waitpid(curr->pid, &status,WNOHANG)){
-				case -1: exit(100); break;
-				case 0: break;
-				default:
-					curr->status = status;
-			}
+		//if(WIFEXITED(curr->status) || WIFSIGNALED(curr->status)) {
+		int status;
+		switch(waitpid(curr->pid, &status,WNOHANG)){
+			case -1: /*exit(100);*/ break;
+			case 0: break;
+			default:
+				curr->status = status;
 		}
+		//}
 	}
 	return 0;
 }
 
+void remove_job(job **jobs, job *j) {
+	for(int i = 0; i < MAX_JOBS; ++i) {
+		if(jobs[i] == j) {
+			free_job(j);
+			jobs[i] = NULL;
+		}
+	}
+}
+
 /*
 
-1) Tous les processus sont terminés
-2) Tous les processus directement lancés par le shell ont exit
-3) Au moins un processus directement lancé par le shell a terminé par signal
-4) Au moins un processus n'a pas terminé
-5) Tous les processus directement lancés par le shell ont terminés
-6) Tous les processus non terminés directement lancés par le shell sont suspendus
+   1) Tous les processus sont terminés
+   2) Tous les processus directement lancés par le shell ont exit
+   3) Au moins un processus directement lancé par le shell a terminé par signal
+   4) Au moins un processus n'a pas terminé
+   5) Tous les processus directement lancés par le shell ont terminés
+   6) Tous les processus non terminés directement lancés par le shell sont suspendus
 
-*/
+ */
 
-int update_job(job *job) {
+int update_job(job **jobs, job *job, int id) {
 	update_pipeline(job->pipeline);
-		// 123456
+	// 123456
 	int st = 0b110011;
-	if(kill(job->pgid, 0) != -1) st &= 0b01111; // 1
-	else st |= 0b000100; // 4
+	if(kill(job->pgid, 0) != -1){
+		st &= 0b01111; // 1
+	}
+	else {
+		st |= 0b000100; // 4
+	}
 	for(process *curr = job->pipeline; curr != NULL; curr = curr->next){
-		if(WIFSIGNALED(curr->status))
+		if(WIFSIGNALED(curr->status)) {
 			st |= 0b001000; // 3
-		if(!WIFEXITED(curr->status))
+		}
+		if(!WIFEXITED(curr->status)) {
 			st &= 0b101111; // 2
-		if(!WIFEXITED(curr->status) && !WIFSIGNALED(curr->status))
+		}
+		if(!WIFEXITED(curr->status) && !WIFSIGNALED(curr->status)) {
 			st &= 0b111101; // 5
-		if(!WIFEXITED(curr->status) && !WIFSIGNALED(curr->status) && !WIFSTOPPED(curr->status))
+		}
+		if(!WIFEXITED(curr->status) && !WIFSIGNALED(curr->status) && !WIFSTOPPED(curr->status)) {
 			st &= 0b111110; // 6
+		}
 	}
 
 	if((st & 0b110000) == 0b110000) {
 		job->state = DONE;
+		if(!job->fg) {
+			print_job(job, id);
+		remove_job(jobs, job);
+		}
 		return 0;
 	}
 	if((st & 0b101000) == 0b101000) {
@@ -94,7 +125,7 @@ int update_jobs(job **jobs) {
 	for(int i = 0; i < MAX_JOBS; i++) {
 		if(jobs[i] != NULL) {
 			if(jobs[i]->state != DONE && jobs[i]->state != KILLED && jobs[i]->state != DETACHED) {
-				update_job(jobs[i]);
+				update_job(jobs, jobs[i], i);
 			}
 		}
 	}
@@ -110,47 +141,51 @@ void launch_process(process *p, int pgid, int fg, w_index *index) {
 	if(pgid == 0) pgid = pid;
 	setpgid(pid, pgid);
 	if(fg) {
-//		tcsetpgrp(STDIN_FILENO, pgid);
+		//		tcsetpgrp(STDIN_FILENO, pgid);
 	}
 	/*
-	signal (SIGINT, SIG_DFL);
-	signal (SIGQUIT, SIG_DFL);
-	signal (SIGTSTP, SIG_DFL);
-	signal (SIGTTIN, SIG_DFL);
-	signal (SIGTTOU, SIG_DFL);
-	signal (SIGCHLD, SIG_DFL);
-	*/
+	   signal (SIGINT, SIG_DFL);
+	   signal (SIGQUIT, SIG_DFL);
+	   signal (SIGTSTP, SIG_DFL);
+	   signal (SIGTTIN, SIG_DFL);
+	   signal (SIGTTOU, SIG_DFL);
+	   signal (SIGCHLD, SIG_DFL);
+	 */
 	//check_redirection(index);
 	execvp(index->words[0], index->words);
 	perror("execvp");
 	exit(234);
 }
 
-int launch_job(job *j, int fg, w_index *index) {
+int launch_job(job *j, int fg, w_index *index, int id) {
 	process *p;
 	int pid;
-	
 	for(p = j->pipeline; p; p = p->next) {
 		if((pid = fork()) != 0) {
+			
 			p->pid = pid;
 			if(!j->pgid) {
 				j->pgid = pid;
 			}
 			setpgid(pid, j->pgid);
+			if(!fg) {
+				print_job(j, id);
+			}
 		} else {
 			launch_process(p, j->pgid, fg, index);
 		}
 	}
 	if(fg) {
-//		tcsetpgrp(STDIN_FILENO, j->pgid);
+		//		tcsetpgrp(STDIN_FILENO, j->pgid);
 	}
 	return pid;
 }
 
 int exec_command(char *cmd, w_index *index, int fg, job **jobs) {
 	job *new_job = malloc(sizeof(job));
-	new_job->cmd = cmd;
-	new_job->state = unknown;
+	new_job->cmd = concat(index);
+	new_job->state = RUNNING;
+	new_job->fg = fg;
 	process *first_process = malloc(sizeof(process));
 	first_process->cmd = malloc(strlen(cmd) + 1);
 	strcpy(first_process->cmd, cmd);
@@ -159,14 +194,21 @@ int exec_command(char *cmd, w_index *index, int fg, job **jobs) {
 	first_process->cmd_index = index;
 	new_job->pipeline=first_process;
 	new_job->pgid = 0;
-	int pid = launch_job(new_job, fg, index);
-	for(int i = 0; i < MAX_JOBS; ++i) {
-		if(jobs[i] == NULL) {
-			jobs[i] = new_job;
-			return pid;
+	int id = -1;
+	if(!fg) {
+		for(int i = 0; i < MAX_JOBS; ++i) {
+			if(jobs[i] == NULL) {
+				jobs[i] = new_job;
+				id = i;
+				break;
+			}
 		}
 	}
-	exit(252);
+	int pid = launch_job(new_job, fg, index, id);
+	if(fg) {
+		free_job(new_job);
+	}
+	return pid;
 }
 
 void free_process(process *p){
@@ -177,6 +219,7 @@ void free_process(process *p){
 
 void free_job(job *j){
 	free_process(j->pipeline);
+	free(j->cmd);
 	free(j);
 }
 

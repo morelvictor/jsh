@@ -12,9 +12,7 @@
 #include "shell.h"
 #include "redirections.h"
 
-
 int main() {
-	job **jobs = calloc(MAX_JOBS, sizeof(job *));
 
 	int in=dup(0);
 	int out=dup(1);
@@ -30,10 +28,11 @@ int main() {
 	rl_initialize();
 	rl_outstream=stderr;
 	init_shell();
-
+	jobs = calloc(MAX_JOBS, sizeof(job *));
 
 	while((input = readline(prompt)) != NULL) {
 		int ret_code=0;
+		int fg = 1;
 		if(res) {
 			free(input);
 			free(prompt);
@@ -41,6 +40,15 @@ int main() {
 		}
 		add_history(input);
 		index = split_space(input);
+		if(index->size != 0) {
+			if(!strcmp(index->words[index->size - 1], "&")) {
+				fg = 0;
+				w_index *new_i = sub_index(index, 0, index->size - 1);
+				//free_index(index);
+				index = new_i;
+				//print_index(index);
+			}
+		}
 		current=index;
 		nb=check_redirection(index);
 		if(nb==-2 || nb== -1) {
@@ -75,7 +83,6 @@ int main() {
 				ret_code = print_jobs(jobs);
 			} else {
 				int status;
-				int fg = 1;
 				int pid = exec_command(input, current, fg, jobs);
 				if(fg) {
 					waitpid(pid, &status, 0);
@@ -96,10 +103,12 @@ end_loop:
 		dup2(out,1);
 		dup2(err_out,2);
 		//peut mieux faire ici, mieux que remettre les 3 (2 sont inutiles)
-		update_prompt(0);
+		update_jobs(jobs);
+		update_prompt(count_jobs(jobs));
 		free(input);
 		free_index(current);
 		if(nb>0) free_index(index);
+		fg = 1;
 	}
 	free(prompt);
 	free_jobs(jobs);

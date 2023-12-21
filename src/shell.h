@@ -7,9 +7,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "jobs.h"
 
 extern int shell_pgid;
 extern int shell_terminal;
+extern job **jobs;
 
 extern void init_shell();
 
