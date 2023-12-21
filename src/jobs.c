@@ -107,6 +107,8 @@ int update_job(job **jobs, job *job, int id) {
 	}
 	if((st & 0b101000) == 0b101000) {
 		job->state = KILLED;
+		print_job(job, id);
+		remove_job(jobs, job);
 		return 0;
 	}
 	if((st & 0b000110) == 0b000110) {
@@ -115,6 +117,7 @@ int update_job(job **jobs, job *job, int id) {
 	}
 	if((st & 0b000001) == 0b000001) {
 		job->state = STOPPED;
+		print_job(job, id);
 		return 0;
 	}
 	job->state = RUNNING;
@@ -141,7 +144,7 @@ void launch_process(process *p, int pgid, int fg, w_index *index) {
 	if(pgid == 0) pgid = pid;
 	setpgid(pid, pgid);
 	if(fg) {
-		//		tcsetpgrp(STDIN_FILENO, pgid);
+				tcsetpgrp(STDIN_FILENO, pgid);
 	}
 	/*
 	   signal (SIGINT, SIG_DFL);
@@ -228,4 +231,10 @@ void free_jobs(job **jobs){
 		if(jobs[i]!=NULL) free_job(jobs[i]);
 	}
 	free(jobs);
+}
+
+
+int are_jobs_running(job **jobs) {
+    if(count_jobs(jobs)>0)return 1;
+    return 0;  // Aucun job en cours d'exécution ou suspendu
 }

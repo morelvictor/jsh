@@ -29,10 +29,9 @@ int main() {
 	rl_outstream=stderr;
 	init_shell();
 	jobs = calloc(MAX_JOBS, sizeof(job *));
-
+	int fg = 1;
 	while((input = readline(prompt)) != NULL) {
 		int ret_code=0;
-		int fg = 1;
 		if(res) {
 			free(input);
 			free(prompt);
@@ -71,14 +70,68 @@ int main() {
 				ret_code = pwd();
 			} else if(strcmp(current->words[0], "?") == 0) {
 				ret_code = return_code();
-			} else if(strcmp(current->words[0], "exit") == 0) {
-				int exit_code = -1;
-				char *last = getenv("?");
-				exit_code = (current->size >= 2) ? atoi(current->words[1]) : last == NULL ? 0 : atoi(last);
-				free(input);
-				free_index(current);
-				if(nb>0) free_index(index);
-				exit(exit_code);
+			} else if(strcmp(index->words[0], "exit") == 0){
+
+				// Vérifier si des jobs sont en cours d'exécution ou suspendus
+   		 		if (are_jobs_running(jobs)) {
+        				fprintf(stderr, "There is %d job.\n", count_jobs(jobs));
+					ret_code = 1;
+        				goto end_loop;
+    				}
+
+    				if (current->size == 1) {
+        			// Pas d'argument pour exit, terminer le shell
+        				char *last = getenv("?");
+        				int value = atoi(last);
+        				free_index(index);
+        				exit(value);
+    				} else if (index->size == 2) {
+        			// terminer le shell avec la valeur de retour spécifiée
+        				int value = atoi(current->words[1]);
+        				free_index(index);
+        				exit(value);
+    				} else {
+        			//erreur
+        				goto end_loop;
+    				}
+
+
+
+
+			} else if(strcmp(index->words[0], "kill")==0) {
+				int signal;
+				int target;
+				int job_or_not=1;
+
+				if (index->size<2 || index->size>3){
+					goto end_loop;
+				}
+				if(index->size==2){
+					signal=SIGTERM;
+					if(index->words[1][0]!='%'){
+						target=atoi(index->words[1]);
+						job_or_not=0;
+					} else {
+						//memmove(index->words[1], index->words[1] + 1, strlen(index->words[1]));
+						//target = atoi(index->words[1]);
+						target=atoi(index->words[1]+1);
+					}
+				} else {
+				//	signal=(index->words[1][1]=='\0')? (index->words[1][1]- '0') : ((index->words[1][1] - '0') * 10 + (index->words[1][2] - '0'));
+					signal= atoi(index->words[1]+1);
+					if(index->words[2][0]!='%'){
+                                                target=atoi(index->words[2]);
+						job_or_not=0;
+                                        } else {
+                                               // memmove(index->words[2], index->words[2]+ 1, strlen(index->words[2]));
+                                               // target = atoi(index->words[2]);
+						target=atoi(index->words[2]+1);
+                               		}
+				}
+				send_signal(jobs, signal, target, job_or_not);
+
+
+
 			} else if(strcmp(index->words[0], "jobs") == 0) {
 				ret_code = print_jobs(jobs);
 			} else {
@@ -89,7 +142,7 @@ int main() {
 					if (WIFEXITED(status)) {
 						ret_code = WEXITSTATUS(status);
 					} else {
-						printf("La commande s'est terminée de manière anormale\n");
+						update_jobs(jobs);
 					}
 					//tcsetpgrp(STDIN_FILENO, getpid());
 				}
