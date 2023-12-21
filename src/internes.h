@@ -9,5 +9,6 @@
 extern int cd(char *path);
 extern int pwd();
 extern int return_code();
+extern void send_signal(int signal, int target, int job_or_not);
 
 #endif
