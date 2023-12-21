@@ -133,7 +133,7 @@ int main() {
 					if(index->words[2][0]!='%'){
                                                 target=atoi(index->words[2]);
 						job_or_not=0;
-                                        } else if(index->words[0][0] == '%' && isdigit(index->words[2][1])){
+                                        } else if(index->words[2][0] == '%' && isdigit(index->words[2][1])){
                                                 memmove(index->words[2], index->words[2]+ 1, strlen(index->words[2]));
                                                 target = atoi(index->words[1]);
                                         } else {
