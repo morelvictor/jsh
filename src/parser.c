@@ -1,4 +1,7 @@
 #include "parser.h"
+#include "redirections.h"
+#include <unistd.h>
+
 
 void free_index(w_index *pi) {
 	for(size_t i = 0; i < pi->size; ++i) {
@@ -82,11 +85,12 @@ w_index *cons_index(int (*f)(int), char *s) {
 w_index *sub_index(w_index *i, size_t deb, size_t fin) {
   w_index *acc = malloc(sizeof(w_index));
   acc->size = fin-deb;
-  acc->words = malloc(acc->size * sizeof(char *));
+  acc->words = malloc((acc->size +1) * sizeof(char *));
   for(int x = 0; x < acc->size; ++x) {
     acc->words[x] = malloc((strlen(i->words[x + deb]) + 1) * sizeof(char));
     strcpy(acc->words[x], i->words[x + deb]);
   }
+	acc->words[acc->size]= NULL;
   return acc;
 }
 
@@ -105,9 +109,27 @@ w_index *split_slash(char *s) {
 w_index *split_space(char *s) {
 	return cons_index(isspace, s);
 }
-
 w_index *split_semicolon(char *s) {
 	return cons_index(is_semicolon , s);
+}
+char * concat(w_index *pi){
+	int len=0;
+	for(int i=0; i<pi->size; ++i){
+		len+=strlen(pi->words[i]);
+	}
+	char *s=malloc((len+pi->size)*sizeof(char));
+	int acc=0;
+	for(int i=0; i<pi->size; ++i){
+		strcpy(s+acc,pi->words[i]);
+		acc+=strlen(pi->words[i]);
+		if(i==pi->size-1) continue;
+		strcpy(s+acc," ");
+		++acc;
+		
+	}
+	*(s+len+pi->size-1)='\0';
+	return s;
+	
 }
 
 

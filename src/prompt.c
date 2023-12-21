@@ -15,7 +15,8 @@ int update_prompt(int jobs) {
 
 	if(count>30) {
 		diff=count-30+3;
-		if(strlen(path)>diff) sprintf(prompt,"\001\033[33m\002[%d]\001\033[36m\002...%s\001\033[00m\002$ ",jobs,path+diff);
+		// if(strlen(path)>diff)
+		sprintf(prompt,"\001\033[33m\002[%d]\001\033[36m\002...%s\001\033[00m\002$ ",jobs,path+diff);
 		
 	}else{
 		sprintf(prompt,"\001\033[33m\002[%d]\001\033[36m\002%s\001\033[00m\002$ ",jobs,path);

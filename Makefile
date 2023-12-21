@@ -2,10 +2,10 @@
 
 SRC_DIR = src
 BUILD_DIR = .out
-OBJ = main.o internes.o parser.o prompt.o
+OBJ = $(BUILD_DIR)/main.o $(BUILD_DIR)/internes.o $(BUILD_DIR)/parser.o $(BUILD_DIR)/prompt.o $(BUILD_DIR)/jobs.o $(BUILD_DIR)/shell.o $(BUILD_DIR)/redirections.o
 
 build: $(OBJ)
-	gcc -g -Wall -o jsh $(OBJ:%=$(BUILD_DIR)/%) -lreadline -lm
+	gcc -g -Wall -o jsh $(OBJ) -lreadline -lm
 
 run: build
 	./jsh
@@ -13,10 +13,14 @@ run: build
 clean:
 	rm -f $(BUILD_DIR)/*.o jsh
 
+test:
+	-./test.sh
+	killall logsig
+
 deps:
 	gcc -MM src/*.c
 
-%.o: $(SRC_DIR)/%.c
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	-mkdir -p $(BUILD_DIR)
-	gcc -g -Wall -o $(BUILD_DIR)/$@ -c $<
+	gcc -g -Wall -o $@ -c $<
 
