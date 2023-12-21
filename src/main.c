@@ -120,11 +120,9 @@ int main() {
 					if(index->words[1][0]!='%'){
 						target=atoi(index->words[1]);
 						job_or_not=0;
-
 					} else if (index->words[1][0] == '%' && isdigit(index->words[1][1])) {
 						memmove(index->words[1], index->words[1] + 1, strlen(index->words[1]));
 						target = atoi(index->words[1]);
-
 					} else {
     						fprintf(stderr, "syntaxe incorrecte");
 					}
@@ -135,16 +133,14 @@ int main() {
 					if(index->words[2][0]!='%'){
                                                 target=atoi(index->words[2]);
 						job_or_not=0;
-
-                                        } else if(index->words[2][0] == '%' && isdigit(index->words[2][1])){
-                                                
+                                        } else if(index->words[0][0] == '%' && isdigit(index->words[2][1])){
+                                                memmove(index->words[2], index->words[2]+ 1, strlen(index->words[2]));
+                                                target = atoi(index->words[1]);
                                         } else {
                                                 fprintf(stderr, "syntaxe incorrecte");
 					}
 				}
 				send_signal(signal, target, job_or_not);
-
-
 
 
 
