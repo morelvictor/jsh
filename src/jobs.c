@@ -117,6 +117,7 @@ int update_job(job **jobs, job *job, int id) {
 	}
 	if((st & 0b000001) == 0b000001) {
 		job->state = STOPPED;
+		print_job(job, id);
 		return 0;
 	}
 	job->state = RUNNING;
@@ -234,12 +235,6 @@ void free_jobs(job **jobs){
 
 
 int are_jobs_running(job **jobs) {
-    for (int i = 0; i < MAX_JOBS; ++i) {
-        if (jobs[i] != NULL) {
-            if (jobs[i]->state == RUNNING || jobs[i]->state == STOPPED) {
-                return 1;  // Un job est en cours d'exécution ou suspendu
-            }
-        }
-    }
+    if(count_jobs(jobs)>0)return 1;
     return 0;  // Aucun job en cours d'exécution ou suspendu
 }

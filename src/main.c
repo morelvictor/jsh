@@ -74,8 +74,9 @@ int main() {
 
 				// Vérifier si des jobs sont en cours d'exécution ou suspendus
    		 		if (are_jobs_running(jobs)) {
-        				free_index(index);
-        				return 1;
+        				fprintf(stderr, "There is %d job.\n", count_jobs(jobs));
+					ret_code = 1;
+        				goto end_loop;
     				}
 
     				if (current->size == 1) {
@@ -141,7 +142,7 @@ int main() {
 					if (WIFEXITED(status)) {
 						ret_code = WEXITSTATUS(status);
 					} else {
-						printf("La commande s'est terminée de manière anormale\n");
+						update_jobs(jobs);
 					}
 					//tcsetpgrp(STDIN_FILENO, getpid());
 				}
