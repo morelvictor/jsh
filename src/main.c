@@ -30,6 +30,9 @@ int main() {
 	init_shell();
 	jobs = calloc(MAX_JOBS, sizeof(job *));
 	int fg = 1;
+
+	setenv("?", "0", 1);
+
 	while((input = readline(prompt)) != NULL) {
 		int ret_code=0;
 		if(res) {
@@ -136,15 +139,20 @@ int main() {
 				ret_code = print_jobs(jobs);
 			} else {
 				int status;
-				int pid = exec_command(input, current, fg, jobs);
+				job *j = exec_command(input, current, fg, jobs);
 				if(fg) {
-					waitpid(pid, &status, 0);
-					if (WIFEXITED(status)) {
-						ret_code = WEXITSTATUS(status);
-					} else {
-						update_jobs(jobs);
-					}
+					do {
+						update_job(jobs, j, j->id);
+					} while(j->state == RUNNING);
 					//tcsetpgrp(STDIN_FILENO, getpid());
+					status = j->pipeline->status;
+					//printf("%d\n", status);
+					if(WIFEXITED(status)) {
+					//	printf("Coucou\n");
+						ret_code = WEXITSTATUS(status);
+					}
+					
+					remove_job(jobs, j);
 				}
 			}
 end_loop:
