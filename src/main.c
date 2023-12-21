@@ -109,6 +109,9 @@ int main() {
     				}
 
 			} else if(strcmp(index->words[0], "kill")==0) {
+				int signal;
+				int target;
+				int job_or_not=1;
 
 
 			} else if(strcmp(index->words[0], "jobs") == 0) {
