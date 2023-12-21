@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <signal.h>
+#include <errno.h>
 
 #include "parser.h"
 
@@ -33,6 +34,7 @@ typedef struct process {
 
 typedef struct job {
 	int pgid;
+	int id;
 	int fg;
 	process *pipeline;
 	state state;
@@ -40,11 +42,13 @@ typedef struct job {
 } job;
 
 int update_jobs(job **);
+int update_job(job **, job *, int);
 int print_jobs(job **);
-int exec_command(char *, w_index *, int, job **);
+job *exec_command(char *, w_index *, int, job **);
 void free_process(process *);
 void free_job(job *);
 void free_jobs(job **);
+void remove_job(job **, job *);
 int count_jobs(job **);
 int are_jobs_running(job **);
 #endif

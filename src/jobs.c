@@ -78,22 +78,28 @@ int update_job(job **jobs, job *job, int id) {
 	int st = 0b110011;
 	if(kill(job->pgid, 0) != -1){
 		st &= 0b01111; // 1
+		//printf("st1: %b\n", st);
 	}
 	else {
 		st |= 0b000100; // 4
+		//printf("st4: %b\n", st);
 	}
 	for(process *curr = job->pipeline; curr != NULL; curr = curr->next){
 		if(WIFSIGNALED(curr->status)) {
 			st |= 0b001000; // 3
+		//printf("st3: %b\n", st);
 		}
 		if(!WIFEXITED(curr->status)) {
 			st &= 0b101111; // 2
+		//printf("st2: %b\n", st);
 		}
 		if(!WIFEXITED(curr->status) && !WIFSIGNALED(curr->status)) {
 			st &= 0b111101; // 5
+		//printf("st5: %b\n", st);
 		}
 		if(!WIFEXITED(curr->status) && !WIFSIGNALED(curr->status) && !WIFSTOPPED(curr->status)) {
-			st &= 0b111110; // 6
+			st &= 0b111110; //6
+		//printf("st6: %b\n", st);
 		}
 	}
 
@@ -101,24 +107,32 @@ int update_job(job **jobs, job *job, int id) {
 		job->state = DONE;
 		if(!job->fg) {
 			print_job(job, id);
-		remove_job(jobs, job);
+			remove_job(jobs, job);
 		}
 		return 0;
 	}
-	if((st & 0b101000) == 0b101000) {
+	if(((st & 0b101000) == 0b101000)) {
 		job->state = KILLED;
 		print_job(job, id);
 		remove_job(jobs, job);
 		return 0;
 	}
-	if((st & 0b000110) == 0b000110) {
-		job->state = DETACHED;
-		return 0;
-	}
-	if((st & 0b000001) == 0b000001) {
+
+		
+	if(((st & 0b000001) == 0b000001)) {
 		job->state = STOPPED;
 		print_job(job, id);
 		return 0;
+	}
+	
+		if((st & 0b000110) == 0b000110) {
+		job->state = DETACHED;
+		return 0;
+	}
+
+
+	if(job->state != RUNNING) {
+		print_job(job, id);
 	}
 	job->state = RUNNING;
 	return 0;
@@ -144,7 +158,7 @@ void launch_process(process *p, int pgid, int fg, w_index *index) {
 	if(pgid == 0) pgid = pid;
 	setpgid(pid, pgid);
 	if(fg) {
-				tcsetpgrp(STDIN_FILENO, pgid);
+		//tcsetpgrp(STDIN_FILENO, pgid);
 	}
 	/*
 	   signal (SIGINT, SIG_DFL);
@@ -184,7 +198,7 @@ int launch_job(job *j, int fg, w_index *index, int id) {
 	return pid;
 }
 
-int exec_command(char *cmd, w_index *index, int fg, job **jobs) {
+job *exec_command(char *cmd, w_index *index, int fg, job **jobs) {
 	job *new_job = malloc(sizeof(job));
 	new_job->cmd = concat(index);
 	new_job->state = RUNNING;
@@ -198,7 +212,7 @@ int exec_command(char *cmd, w_index *index, int fg, job **jobs) {
 	new_job->pipeline=first_process;
 	new_job->pgid = 0;
 	int id = -1;
-	if(!fg) {
+	//if(!fg) {
 		for(int i = 0; i < MAX_JOBS; ++i) {
 			if(jobs[i] == NULL) {
 				jobs[i] = new_job;
@@ -206,12 +220,13 @@ int exec_command(char *cmd, w_index *index, int fg, job **jobs) {
 				break;
 			}
 		}
-	}
-	int pid = launch_job(new_job, fg, index, id);
-	if(fg) {
+	//}
+	new_job->id = id;
+	launch_job(new_job, fg, index, id);
+	/*if(fg) {
 		free_job(new_job);
-	}
-	return pid;
+	}*/
+	return new_job;
 }
 
 void free_process(process *p){
