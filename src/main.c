@@ -83,6 +83,22 @@ int main() {
 
 			} else if(strcmp(index->words[0], "exit") == 0){
 
+				// Vérifier si des jobs sont en cours d'exécution ou suspendus
+   		 		if (are_jobs_running()) {
+        				
+    				}
+
+    				if (index->size == 1) {
+        			// Pas d'argument pour exit, terminer le shell
+        				
+    				} else if (index->size == 2) {
+        			// terminer le shell avec la valeur de retour spécifiée
+        			
+    				} else {
+        			//erreur
+        	
+    				}
+
 
 
 
