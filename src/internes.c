@@ -52,10 +52,11 @@ int return_code() {
 	return 0;
 }
 
+
 //c est la fonction pour kill
 void send_signal(int signal, int target, int job_or_not){
 	if (job_or_not==1) {//envoie du signal au job de num target
-        	if (kill(jobs[target]->pgid, signal) == -1) {
+        	if (kill(-jobs[target]->pgid, signal) == -1) {
             		perror("kill");
             		exit(EXIT_FAILURE);
         	}
@@ -65,10 +66,10 @@ void send_signal(int signal, int target, int job_or_not){
 			perror("kill");
 			exit(EXIT_FAILURE);
         	}
-
         	printf("signal %d au processus du %d\n", signal, target);
 	} else {
         	fprintf(stderr, "La cible est invalide : %d\n", target);
         	exit(EXIT_FAILURE);
     }
 }
+
