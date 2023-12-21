@@ -52,3 +52,18 @@ int return_code() {
 	return 0;
 }
 
+//c est la fonction pour kill
+void send_signal(int signal, int target, int job_or_not){
+	if (job_or_not==1) {//envoie du signal au job de num target
+        	
+        	}
+        	printf("signal %d à tous les processus du job %d\n", signal, target);//pour tester
+	} else if (job_or_not==0){
+		
+        }
+        	printf("signal %d au processus du %d\n", signal, target);
+	} else {
+        	fprintf(stderr, "La cible est invalide : %d\n", target);
+        	exit(EXIT_FAILURE);
+    }
+}
