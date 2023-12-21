@@ -55,7 +55,9 @@ int return_code() {
 //c est la fonction pour kill
 void send_signal(int signal, int target, int job_or_not){
 	if (job_or_not==1) {//envoie du signal au job de num target
-        	
+        	if (kill(-jobs[target]->pgid, signal) == -1) {
+            		perror("kill");
+            		exit(EXIT_FAILURE);
         	}
         	printf("signal %d à tous les processus du job %d\n", signal, target);//pour tester
 	} else if (job_or_not==0){
