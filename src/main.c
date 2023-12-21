@@ -85,15 +85,25 @@ int main() {
 
 				// Vérifier si des jobs sont en cours d'exécution ou suspendus
    		 		if (are_jobs_running()) {
-        				
+        				printf("Des jobs sont en cours d'exécution. Impossible de exit.\n");
+        				free_index(index);
+        				return 1;
+
     				}
 
     				if (index->size == 1) {
         			// Pas d'argument pour exit, terminer le shell
-        				
+        				char *last = getenv("?");
+        				int value = atoi(last);
+        				free_index(index);
+        				exit(value);
+
     				} else if (index->size == 2) {
         			// terminer le shell avec la valeur de retour spécifiée
-        			
+        			int value = atoi(index->words[1]);
+        				free_index(index);
+        				exit(value);
+
     				} else {
         			//erreur
         	
