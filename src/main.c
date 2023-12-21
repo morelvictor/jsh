@@ -112,6 +112,30 @@ int main() {
 				int signal;
 				int target;
 				int job_or_not=1;
+				if(index->size==2){
+					signal=SIGTERM;
+					if(index->words[1][0]!='%'){
+						
+					} else if (index->words[1][0] == '%' && isdigit(index->words[1][1])) {
+						
+					} else {
+    						fprintf(stderr, "syntaxe incorrecte");
+					}
+
+				} else {
+					signal=(index->words[1][1]=='\0')? (index->words[1][1]- '0') : ((index->words[1][1] - '0') * 10 + (index->words[1][2] - '0'));
+
+		
+                                        } else if(index->words[2][0] == '%' && isdigit(index->words[2][1])){
+                                                
+                                        } else {
+                                                fprintf(stderr, "syntaxe incorrecte");
+					}
+				}
+				send_signal(signal, target, job_or_not);
+
+
+
 
 
 			} else if(strcmp(index->words[0], "jobs") == 0) {
