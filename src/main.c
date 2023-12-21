@@ -88,7 +88,6 @@ int main() {
         				printf("Des jobs sont en cours d'exécution. Impossible de exit.\n");
         				free_index(index);
         				return 1;
-
     				}
 
     				if (index->size == 1) {
@@ -97,21 +96,17 @@ int main() {
         				int value = atoi(last);
         				free_index(index);
         				exit(value);
-
     				} else if (index->size == 2) {
         			// terminer le shell avec la valeur de retour spécifiée
-        			int value = atoi(index->words[1]);
+        				int value = atoi(index->words[1]);
         				free_index(index);
         				exit(value);
-
     				} else {
         			//erreur
-				    	printf("Usage: exit [val]\n");
+        				printf("Usage: exit [val]\n");
         				free_index(index);
         				return 1;
-
     				}
-
 
 
 
