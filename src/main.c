@@ -74,7 +74,6 @@ int main() {
 
 				// Vérifier si des jobs sont en cours d'exécution ou suspendus
    		 		if (are_jobs_running(jobs)) {
-        				printf("Des jobs sont en cours d'exécution. Impossible de exit.\n");
         				free_index(index);
         				return 1;
     				}

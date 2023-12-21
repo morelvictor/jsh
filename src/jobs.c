@@ -107,6 +107,7 @@ int update_job(job **jobs, job *job, int id) {
 	}
 	if((st & 0b101000) == 0b101000) {
 		job->state = KILLED;
+		print_job(job, id);
 		remove_job(jobs, job);
 		return 0;
 	}
