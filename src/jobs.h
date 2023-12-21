@@ -46,5 +46,5 @@ void free_process(process *);
 void free_job(job *);
 void free_jobs(job **);
 int count_jobs(job **);
-
+int are_jobs_running();
 #endif
