@@ -7,4 +7,6 @@
 #include <fcntl.h>
 #include "parser.h"
 
+extern int count_substitutions(w_index *);
+
 #endif
