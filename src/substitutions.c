@@ -38,6 +38,12 @@ void print_tab(int *t,int len){
 	}
 	puts("");
 }
+void get_cmds_sub(w_index **cmds, w_index *pi, int *t, int *p, int n){
+	for(int i=0; i<n; ++i){
+		cmds[i]=sub_index(pi,t[i]+1,p[i]);
+	}
+	
+}
 
 /*int main(){
 	w_index *pi=split_space("cmd1 <( cmd2 ) <( cmd3 )");
