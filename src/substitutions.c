@@ -44,20 +44,33 @@ void get_cmds_sub(w_index **cmds, w_index *pi, int *t, int *p, int n){
 	}
 	
 }
+/*TODO : 
+faire une fonction qui execute char commande de w_index **cmds, 
+en recuperant POUR CHACUNE, la reference du fichier de redirection
+puis reconstituer un nouvel index de ligne de commande dans laquelle les substitutions ont ete remplacees par les references de fichier
+voir strategie envoyee sur discord
+*/
 
 /*int main(){
-	w_index *pi=split_space("cmd1 <( cmd2 | cmd2.1 | cmd2.2 ) <( cmd3 | cmd3.1 )");
-	
+	w_index *p=split_space("cmd1 <( cmd2 ) <( cmd3 | cmd3.1 )");
+	w_index *pi=sub_index(p,0,4);
 	pi->words=realloc(pi->words,(pi->size+1)*sizeof(char*));
-	char *nouv="tutu";
+	char *nouv=malloc(5*sizeof(char));
+	nouv[0]='j';
+	nouv[1]='a';
+	nouv[2]='n';
+	nouv[3]='a';
+	nouv[4]='\0';
 	pi->words[pi->size]=malloc((strlen(nouv)+1)*sizeof(char));
 	strcpy(pi->words[pi->size],nouv);
 	pi->size=pi->size+1;
+	free(nouv);
+	free(p);
 	print_index(pi);
 	free_index(pi);
-
+*/
 	
-	const int n=count_substitutions(pi);
+	/*const int n=count_substitutions(pi);
 	if(n==0) printf("pas de substitution\n");
 	if (n==-1) printf("syntaxe invalide\n");
 	if(n>0){
@@ -84,6 +97,6 @@ void get_cmds_sub(w_index **cmds, w_index *pi, int *t, int *p, int n){
 		free(s);
 		printf("%s\n",cp);	
 
-	}
-	exit(0);
-}*/
+	}*/
+	//exit(0);
+//}
