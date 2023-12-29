@@ -44,14 +44,55 @@ void get_cmds_sub(w_index **cmds, w_index *pi, int *t, int *p, int n){
 	}
 	
 }
-/*TODO : 
-faire une fonction qui execute char commande de w_index **cmds, 
-en recuperant POUR CHACUNE, la reference du fichier de redirection
-puis reconstituer un nouvel index de ligne de commande dans laquelle les substitutions ont ete remplacees par les references de fichier
-voir strategie envoyee sur discord
-*/
+int launch_cmd(w_index *pi){
+	/*int fd[2];
+	if(pipe(fd)==-1){
+		perror("pipe failed");
+		exit(1);
+	}
+	close(fd[0]);*/
+	int fd=open("yeah", O_WRONLY | O_CREAT | O_EXCL, 0600);
+	switch(fork()){
+		case -1 : 
+			perror("fork failed");
+			exit(1);
+		case 0 : 
+			dup2(fd,1);
+			execvp(pi->words[0],pi->words);
+			perror("execvp");
+			exit(1);
+		default : 
+			wait(NULL);
+			
+	}
+	return fd;
+}
+int launch_cmd2(w_index *pi){
+	switch(fork()){
+		case -1 : 
+			perror("fork failed");
+			exit(1);
+		case 0 :
+			execvp(pi->words[0],pi->words);
+			perror("execvp");
+			exit(1);
+		default : 
+			wait(NULL);
+			
+	}
+	return 0;
+}
 
 /*int main(){
+	w_index *pi=split_space("ls .");
+	int fd=launch_cmd(pi);
+	printf("descripteur : %d\n", fd);
+	char buffer[50];
+	sprintf(buffer,"cat /dev/fd/%d",fd);
+	printf("%s\n",buffer);
+	w_index *ti=split_space(buffer);
+	launch_cmd2(ti);
+
 	w_index *p=split_space("cmd1 <( cmd2 ) <( cmd3 | cmd3.1 )");
 	w_index *pi=sub_index(p,0,4);
 	pi->words=realloc(pi->words,(pi->size+1)*sizeof(char*));
@@ -68,9 +109,9 @@ voir strategie envoyee sur discord
 	free(p);
 	print_index(pi);
 	free_index(pi);
-*/
+
 	
-	/*const int n=count_substitutions(pi);
+	const int n=count_substitutions(pi);
 	if(n==0) printf("pas de substitution\n");
 	if (n==-1) printf("syntaxe invalide\n");
 	if(n>0){
@@ -97,6 +138,6 @@ voir strategie envoyee sur discord
 		free(s);
 		printf("%s\n",cp);	
 
-	}*/
-	//exit(0);
-//}
+	}
+	exit(0);
+}*/

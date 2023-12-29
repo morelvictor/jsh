@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/wait.h>
 #include "parser.h"
 
 extern int count_substitutions(w_index *);
