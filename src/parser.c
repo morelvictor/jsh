@@ -137,11 +137,11 @@ void add_word(w_index *pi,char *s){
 	strcpy(pi->words[pi->size],s);
 	pi->size=pi->size+1;
 }
-int main(){
+/*int main(){
 	w_index *pi=split_space("hola me llamo Jana");
 	add_word(pi,"Ayadi");
 	print_index(pi);
 	free_index(pi);
 	exit(0);
-}
+}*/
 
