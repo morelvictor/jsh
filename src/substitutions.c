@@ -45,42 +45,67 @@ void get_cmds_sub(w_index **cmds, w_index *pi, int *t, int *p, int n){
 	
 }
 int launch_cmd(w_index *pi){
-	/*int fd[2];
+	int out=dup(1);
+	int fd[2];
 	if(pipe(fd)==-1){
 		perror("pipe failed");
 		exit(1);
 	}
-	close(fd[0]);*/
-	int fd=open("yeah", O_WRONLY | O_CREAT | O_EXCL, 0600);
 	switch(fork()){
 		case -1 : 
 			perror("fork failed");
 			exit(1);
 		case 0 : 
-			dup2(fd,1);
+			dup2(fd[1],1);
 			execvp(pi->words[0],pi->words);
 			perror("execvp");
 			exit(1);
 		default : 
-			wait(NULL);
+			read(fd[0],NULL,0);
+			close(fd[0]);
+			dup2(out,1);
+			close(out);
+			
 			
 	}
-	return fd;
+	return fd[1];
 }
-int launch_cmd2(w_index *pi){
+int launch_test(w_index *pi){
 	switch(fork()){
 		case -1 : 
-			perror("fork failed");
+			perror("fork");
 			exit(1);
-		case 0 :
+		case 0 : 
 			execvp(pi->words[0],pi->words);
 			perror("execvp");
 			exit(1);
 		default : 
 			wait(NULL);
-			
+			break;
 	}
 	return 0;
 }
 
+//-1 : FAILED
+//-2 : SYNTAX ERROR
+// 0 : NO SUBSTITUTION
+int is_subsituted(w_index *pi){
+	int n=count_substitutions(pi);
+	if(n==-1) return -2;
+	if(n==0) return 0;
+	return n;
+}
 
+
+
+/*int main(){
+	w_index *pi=split_space("ls .");
+	int fd=launch_cmd(pi);
+	printf("descripteur : %d\n", fd);
+	char buff[50];
+	sprintf(buff, "cat /dev/fd/%d", fd);
+	w_index *ti=split_space(buff);
+	launch_test(ti);
+	close(fd);
+	exit(0);
+}*/
