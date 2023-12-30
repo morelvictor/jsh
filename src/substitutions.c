@@ -89,16 +89,53 @@ int launch_test(w_index *pi){
 //-1 : FAILED
 //-2 : SYNTAX ERROR
 // 0 : NO SUBSTITUTION
-int is_subsituted(w_index *pi){
+int is_substituted(w_index *pi){
 	int n=count_substitutions(pi);
 	if(n==-1) return -2;
 	if(n==0) return 0;
 	return n;
 }
+w_index *substitute(w_index *pi){
+	const int n=is_substituted(pi);
+	if(n==-1 || n==-2) return NULL;
+	if(n==0) return pi;
+	int open[n];
+	int close[n];
+	int *fds=malloc(n*sizeof(int));
+	pos_open_sub(pi,open);
+	pos_close_sub(pi,close);
+	w_index *first=sub_index(pi,0,open[0]);
+	w_index **cmds=malloc(n*sizeof(w_index *));
+	get_cmds_sub(cmds,pi,open,close,n);
+	printf("1\n");
+ 	for(int i=0; i<n; ++i){
+		//printf("i = %d\n",i);
+		print_index(cmds[i]);
+		fds[i]=launch_cmd(cmds[i]);
+	}
+	int acc=0;
+	int i=open[0];
+	while(i<pi->size){
+		if(strcmp("<(",pi->words[i])==0){
+			char buff[50];
+			sprintf(buff, "cat /dev/fd/%d", fds[acc]);
+			add_word(first,buff);
+			++acc;
+			i=close[i]+1;
+		}else{
+			add_word(first,pi->words[i]);
+			++i;
+		}
+	}
+	return first;
+}
 
 
 
 /*int main(){
+	w_index *pi=split_space("cat <( ls . )");
+	w_index *nouv=substitute(pi);
+	print_index(nouv);
 	w_index *pi=split_space("ls .");
 	int fd=launch_cmd(pi);
 	printf("descripteur : %d\n", fd);

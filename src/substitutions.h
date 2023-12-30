@@ -14,7 +14,8 @@ extern void pos_close_sub(w_index *,int *);
 extern void print_tab(int *,int);
 extern void get_cmds_sub(w_index **, w_index *, int *, int *, int );
 extern int launch_cmd(w_index *);
-extern int launch_test(w_index *pi);
-extern int is_substituted(w_index *pi);
+extern int launch_test(w_index *);
+extern int is_substituted(w_index *);
+extern w_index * substitute(w_index *);
 
 #endif
