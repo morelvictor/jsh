@@ -108,56 +108,35 @@ w_index *substitute(w_index *pi){
 	w_index *first=sub_index(pi,0,open[0]);
 	w_index **cmds=malloc(n*sizeof(w_index *));
 	get_cmds_sub(cmds,pi,open,close,n);
-	for(int i=0; i<n; ++i){
-		print_index(cmds[i]);
-		puts("\n");
-	}
  	for(int i=0; i<n; ++i){
 		fds[i]=launch_cmd(cmds[i]);
 	}
-	printf("finito\n");
-	/*int acc=0;
+	int acc=0;
 	int i=open[0];
 	while(i<pi->size){
 		if(strcmp("<(",pi->words[i])==0){
 			char buff[50];
 			sprintf(buff, "/dev/fd/%d", fds[acc]);
 			add_word(first,buff);
+			i=close[acc]+1;
 			++acc;
-			i=close[i]+1;
 		}else{
 			add_word(first,pi->words[i]);
 			++i;
 		}
-	}*/
+	}
 	return first;
 }
-int test(w_index **cmds,int n){
-	for(int i=0; i<n; ++i){
-		int x=launch_cmd(cmds[i]);
-		printf("%d\n",x);
-	}
-	return 0;
-}
-
-//int main(){
-	//w_index *pi=split_space("cat <( ls . ) <( ls . )");
-	//w_index *nouv=substitute(pi);
-	/*w_index **cmds=malloc(2*sizeof(w_index *));
-	int open[2]={1,5};
-	int close[2]={4,8};*/
-	//get_cmds_sub(cmds,pi,open,close,2);
-	//test(cmds,2);
-	//test(pi);
-	//w_index *nouv=substitute(pi);
-	//print_index(nouv);
-	/*w_index *pi=split_space("ls .");
-	int fd=launch_cmd(pi);
-	printf("descripteur : %d\n", fd);
-	char buff[50];
-	sprintf(buff, "cat /dev/fd/%d", fd);
-	w_index *ti=split_space(buff);
-	launch_test(ti);
-	close(fd);*/
-	//exit(0);
-//}
+/*int main(){
+	w_index *pi=split_space("cat <( ls . )");
+	w_index *nouv=substitute(pi);
+	print_index(nouv);
+	if(fork()==0){
+		execvp(nouv->words[0],nouv->words);
+		perror("execvp2");
+	}else{
+		wait(NULL);
+		printf("FINITO\n");
+	}	
+	exit(0);
+}*/
