@@ -144,7 +144,6 @@ int main() {
 					do {
 						update_job(jobs, j, j->id);
 					} while(j->state == RUNNING);
-					//tcsetpgrp(STDIN_FILENO, getpid());
 					status = j->pipeline->status;
 					//printf("%d\n", status);
 					if(WIFEXITED(status)) {

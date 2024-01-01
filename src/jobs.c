@@ -41,7 +41,7 @@ int update_pipeline(process *pipeline) {
 	for(process *curr = pipeline; curr != NULL; curr = curr->next){
 		//if(WIFEXITED(curr->status) || WIFSIGNALED(curr->status)) {
 		int status;
-		switch(waitpid(curr->pid, &status,WNOHANG)){
+		switch(waitpid(curr->pid, &status, WNOHANG | WUNTRACED)){
 			case -1: /*exit(100);*/ break;
 			case 0: break;
 			default:
@@ -108,6 +108,8 @@ int update_job(job **jobs, job *job, int id) {
 		if(!job->fg) {
 			print_job(job, id);
 			remove_job(jobs, job);
+		} else {
+			//if(tcsetpgrp(STDIN_FILENO, getpgid(getpid())) == -1) exit(250);
 		}
 		return 0;
 	}
@@ -129,7 +131,6 @@ int update_job(job **jobs, job *job, int id) {
 		job->state = DETACHED;
 		return 0;
 	}
-
 
 	if(job->state != RUNNING) {
 		print_job(job, id);
@@ -153,13 +154,11 @@ void job_fg(job *j) {
 	tcsetpgrp(STDIN_FILENO, j->pgid);
 }
 
-void launch_process(process *p, int pgid, int fg, w_index *index) {
+void launch_process(process *p, int pgid, int fg, int shell_pgid, w_index *index) {
 	int pid = getpid();
 	if(pgid == 0) pgid = pid;
-	setpgid(pid, pgid);
-	if(fg) {
-		//tcsetpgrp(STDIN_FILENO, pgid);
-	}
+	if(!fg) setpgid(pid, pgid);
+	else setpgid(pid, shell_pgid);
 	/*
 	   signal (SIGINT, SIG_DFL);
 	   signal (SIGQUIT, SIG_DFL);
@@ -169,6 +168,7 @@ void launch_process(process *p, int pgid, int fg, w_index *index) {
 	   signal (SIGCHLD, SIG_DFL);
 	 */
 	//check_redirection(index);
+	//if(tcgetpgrp(STDIN_FILENO) == pgid) fprintf(stderr, "Oui\n");
 	execvp(index->words[0], index->words);
 	perror("execvp");
 	exit(234);
@@ -177,6 +177,7 @@ void launch_process(process *p, int pgid, int fg, w_index *index) {
 int launch_job(job *j, int fg, w_index *index, int id) {
 	process *p;
 	int pid;
+	int shell_pgid = getpgid(getpid());
 	for(p = j->pipeline; p; p = p->next) {
 		if((pid = fork()) != 0) {
 			
@@ -189,11 +190,8 @@ int launch_job(job *j, int fg, w_index *index, int id) {
 				print_job(j, id);
 			}
 		} else {
-			launch_process(p, j->pgid, fg, index);
+			launch_process(p, j->pgid, fg, shell_pgid, index);
 		}
-	}
-	if(fg) {
-		//		tcsetpgrp(STDIN_FILENO, j->pgid);
 	}
 	return pid;
 }

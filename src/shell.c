@@ -28,15 +28,24 @@ init_shell ()
 //      sigaction (SIGTTOU, &ignore, NULL);
 //      sigaction (SIGCHLD, &chld, NULL);
       /* Put ourselves in our own process group.  */
-      // shell_pgid = getpid();
-      // if (setpgid (shell_pgid, shell_pgid) < 0)
+       //shell_pgid = getpid();
+//setsid();
+       //if (setpgid (shell_pgid, shell_pgid) < 0)
         // {
-          // perror ("Couldn't put the shell in its own process group");
-          // exit (110);
-        // }
+	//	fprintf(stderr, "oh");
+         // perror ("Couldn't put the shell in its own process group");
+	//if(errno == EACCES)
+         //  exit (120);
+//	if(errno == EINVAL)
+//		exit(121);
+//	if(errno == EPERM)
+//		exit(122);
+//	if(errno == ESRCH)
+//		exit(123);
+  //   	}
       // setsid();
 
       /* Grab control of the terminal.  */
-      //tcsetpgrp (shell_terminal, shell_pgid);
+    //  tcsetpgrp (shell_terminal, shell_pgid);
 
 }
