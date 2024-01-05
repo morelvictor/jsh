@@ -41,8 +41,8 @@ typedef struct job {
 	char *cmd;
 } job;
 
-int update_jobs(job **);
-int update_job(job **, job *, int);
+int update_jobs(FILE *, job **);
+int update_job(FILE*, job **, job *, int);
 int print_jobs(job **);
 job *exec_command(char *, w_index *, int, job **);
 void free_process(process *);
@@ -51,4 +51,5 @@ void free_jobs(job **);
 void remove_job(job **, job *);
 int count_jobs(job **);
 int are_jobs_running(job **);
+
 #endif
