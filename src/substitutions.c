@@ -82,12 +82,12 @@ void get_cmds_sub(w_index **cmds, w_index *pi, int *t, int *p, int n){
 	
 }
 int launch_cmd(w_index *pi){
-	printf("%s\n", concat(pi));
 	w_index *tmp=NULL;
 	if(is_substituted(pi)>0)tmp=substitute(pi);
 	else tmp=pi;
-	printf("%s\n", concat(tmp));
+
 	int out=dup(1);
+
 	int fd[2];
 	if(pipe(fd)==-1){
 		perror("pipe failed");
@@ -110,7 +110,7 @@ int launch_cmd(w_index *pi){
 			
 			
 	}
-	printf("\n-------------\n");
+	//printf("\n-------------\n");
 	return fd[1];
 }
 int launch_test(w_index *pi){
@@ -168,21 +168,20 @@ w_index *substitute(w_index *pi){
 			++i;
 		}
 	}
-	return first;
+	w_index *yeah=split_space(concat(first));
+	return yeah;
 }
 /*int main(){
-	w_index *pi=split_space("cat <( ls . )");
-	w_index *nouv=substitute(pi);
-	print_index(nouv);
+	w_index *pi=split_space("diff <( ls . ) <( cat janana)");
+	w_index *ti=substitute(pi);
+	//printf("new_line : %s\n",concat(ti));
+	//printf("%s\n",ti->words[1]);
 	if(fork()==0){
-		execvp(nouv->words[0],nouv->words);
-		perror("execvp2");
+		execvp(ti->words[0],ti->words);
+		perror("execvp");
 	}else{
 		wait(NULL);
-		printf("FINITO\n");
+		//printf("\nc'est fini ?\n");
 	}
-	w_index *pi=split_space("cat <( cat <(  ls . ) )");
-	w_index *ti=substitute(pi);
-	printf("%s\n",concat(ti));
 	exit(0);
 }*/
