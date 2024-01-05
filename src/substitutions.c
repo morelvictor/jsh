@@ -6,24 +6,23 @@
 int count_substitutions(w_index* pi){
 	int n=0;
 	int m=0;
-	int acc=0; /*nombre de <( qui successifs*/
+	//int acc=0;
 	for(int i=0; i<pi->size; ++i){
 		if(strcmp("<(",pi->words[i])==0){
-			if(acc==0) ++n;	
-			++acc;
+			/*if(acc==0)*/ ++n;	
+			//++acc;
 		}
 		if(strcmp(")",pi->words[i])==0) {
-			if(acc==1) ++m;
-			--acc;
+			/*if(acc==1)*/ ++m;
+			//--acc;
 		}
 	}
-	//printf("n : %d , m : %d\n",n,m);
 	if(n!=m) return -1;
 	else return n;
 }
 
 void pos_open_sub(w_index *pi, int *t){
-	int acc_t=0;	
+	/*int acc_t=0;	
 	int acc=0;
 	for(int i=0; i<pi->size; ++i){
 		if(strcmp("<(",pi->words[i])==0){
@@ -36,17 +35,17 @@ void pos_open_sub(w_index *pi, int *t){
 		if(strcmp(")",pi->words[i])==0) {
 			--acc;
 		}
-	}
-	/*int acc_t=0;
+	}*/
+	int acc_t=0;
 	for(int i=0; i<pi->size; ++i){
 		if(strcmp("<(",pi->words[i])==0){
 			t[acc_t]=i;
 			++acc_t;
 		}
-	}*/
+	}
 }
 void pos_close_sub(w_index *pi,int *t){
-	int acc_t=0;	
+	/*int acc_t=0;	
 	int acc=0; 
 	for(int i=0; i<pi->size; ++i){
 		if(strcmp("<(",pi->words[i])==0){
@@ -59,15 +58,15 @@ void pos_close_sub(w_index *pi,int *t){
 			}
 			--acc;
 		}
-	}
+	}*/
 
-	/*int acc_t=0;	
+	int acc_t=0;	
 	for(int i=0; i<pi->size; ++i){
 		if(strcmp(")",pi->words[i])==0){
 			t[acc_t]=i;
 			++acc_t;
 		}
-	}*/
+	}
 }
 void print_tab(int *t,int len){
 	for(int i=0; i<len; ++i){
@@ -82,9 +81,9 @@ void get_cmds_sub(w_index **cmds, w_index *pi, int *t, int *p, int n){
 	
 }
 int launch_cmd(w_index *pi){
-	w_index *tmp=NULL;
+	/*w_index *tmp=NULL;
 	if(is_substituted(pi)>0)tmp=substitute(pi);
-	else tmp=pi;
+	else tmp=pi;*/
 
 	int out=dup(1);
 
@@ -93,25 +92,26 @@ int launch_cmd(w_index *pi){
 		perror("pipe failed");
 		exit(1);
 	}
-	switch(fork()){
+	int pid=fork();
+	switch(pid){
 		case -1 : 
 			perror("fork failed");
 			exit(1);
 		case 0 : 
 			dup2(fd[1],1);
-			execvp(tmp->words[0],tmp->words);
+			execvp(pi->words[0],pi->words);
 			perror("execvp");
 			exit(1);
 		default : 
-			read(fd[0],NULL,0);
-			close(fd[0]);
+			waitpid(pid,NULL,0);
+			//read(fd[0],NULL,0);
 			dup2(out,1);
+			close(fd[1]);
 			close(out);
 			
 			
 	}
-	//printf("\n-------------\n");
-	return fd[1];
+	return fd[0];
 }
 int launch_test(w_index *pi){
 	switch(fork()){
@@ -172,16 +172,16 @@ w_index *substitute(w_index *pi){
 	return yeah;
 }
 /*int main(){
-	w_index *pi=split_space("diff <( ls . ) <( cat janana)");
+	w_index *pi=split_space("diff  <( cat blob.txt ) <( ls . )");
 	w_index *ti=substitute(pi);
-	//printf("new_line : %s\n",concat(ti));
-	//printf("%s\n",ti->words[1]);
+	//print_index(ti);
 	if(fork()==0){
+		//char *args[]={"sort","fic1"};
 		execvp(ti->words[0],ti->words);
 		perror("execvp");
 	}else{
 		wait(NULL);
-		//printf("\nc'est fini ?\n");
 	}
+	
 	exit(0);
 }*/
