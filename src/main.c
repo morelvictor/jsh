@@ -41,12 +41,14 @@ int main() {
 			exit(10);
 		}
 		add_history(input);
+		//TODO
 		index = split_space(input);
 		if(index->size != 0) {
 			if(!strcmp(index->words[index->size - 1], "&")) {
 				fg = 0;
 				w_index *new_i = sub_index(index, 0, index->size - 1);
-				//free_index(index);
+				//TODO
+				free_index(index);
 				index = new_i;
 				//print_index(index);
 			}
