@@ -41,12 +41,14 @@ int main() {
 			exit(10);
 		}
 		add_history(input);
+		//TODO
 		index = split_space(input);
 		if(index->size != 0) {
 			if(!strcmp(index->words[index->size - 1], "&")) {
 				fg = 0;
 				w_index *new_i = sub_index(index, 0, index->size - 1);
-				//free_index(index);
+				//TODO
+				free_index(index);
 				index = new_i;
 				//print_index(index);
 			}
@@ -61,7 +63,7 @@ int main() {
 			sub=sub_index(index,0,nb);
 			current=sub;
 		}
-		
+
 		if(current->size != 0) {
 			if(strcmp(current->words[0],"cd")==0){
 				if(current->size==1){
@@ -76,27 +78,27 @@ int main() {
 			} else if(strcmp(index->words[0], "exit") == 0){
 
 				// Vérifier si des jobs sont en cours d'exécution ou suspendus
-   		 		if (are_jobs_running(jobs)) {
-        				fprintf(stderr, "There is %d job.\n", count_jobs(jobs));
+				if (are_jobs_running(jobs)) {
+					fprintf(stderr, "There is %d job.\n", count_jobs(jobs));
 					ret_code = 1;
-        				goto end_loop;
-    				}
+					goto end_loop;
+				}
 
-    				if (current->size == 1) {
-        			// Pas d'argument pour exit, terminer le shell
-        				char *last = getenv("?");
-        				int value = atoi(last);
-        				free_index(index);
-        				exit(value);
-    				} else if (index->size == 2) {
-        			// terminer le shell avec la valeur de retour spécifiée
-        				int value = atoi(current->words[1]);
-        				free_index(index);
-        				exit(value);
-    				} else {
-        			//erreur
-        				goto end_loop;
-    				}
+				if (current->size == 1) {
+					// Pas d'argument pour exit, terminer le shell
+					char *last = getenv("?");
+					int value = atoi(last);
+					free_index(index);
+					exit(value);
+				} else if (index->size == 2) {
+					// terminer le shell avec la valeur de retour spécifiée
+					int value = atoi(current->words[1]);
+					free_index(index);
+					exit(value);
+				} else {
+					//erreur
+					goto end_loop;
+				}
 
 
 
@@ -120,16 +122,16 @@ int main() {
 						target=atoi(index->words[1]+1);
 					}
 				} else {
-				//	signal=(index->words[1][1]=='\0')? (index->words[1][1]- '0') : ((index->words[1][1] - '0') * 10 + (index->words[1][2] - '0'));
+					//	signal=(index->words[1][1]=='\0')? (index->words[1][1]- '0') : ((index->words[1][1] - '0') * 10 + (index->words[1][2] - '0'));
 					signal= atoi(index->words[1]+1);
 					if(index->words[2][0]!='%'){
-                                                target=atoi(index->words[2]);
+						target=atoi(index->words[2]);
 						job_or_not=0;
-                                        } else {
-                                               // memmove(index->words[2], index->words[2]+ 1, strlen(index->words[2]));
-                                               // target = atoi(index->words[2]);
+					} else {
+						// memmove(index->words[2], index->words[2]+ 1, strlen(index->words[2]));
+						// target = atoi(index->words[2]);
 						target=atoi(index->words[2]+1);
-                               		}
+					}
 				}
 				send_signal(jobs, signal, target, job_or_not);
 
@@ -142,17 +144,20 @@ int main() {
 				job *j = exec_command(input, current, fg, jobs);
 				if(fg) {
 					do {
-						update_job(jobs, j, j->id);
-					} while(j->state == RUNNING);
-					//tcsetpgrp(STDIN_FILENO, getpid());
-					status = j->pipeline->status;
-					//printf("%d\n", status);
-					if(WIFEXITED(status)) {
-					//	printf("Coucou\n");
-						ret_code = WEXITSTATUS(status);
+						update_job(stderr, jobs, j, j->id);
+					} while(j->state == RUNNING && j->fg);
+					if(j->fg) {
+						status = j->pipeline->status;
+						//printf("%d\n", status);
+						if(WIFEXITED(status)) {
+							//	printf("Coucou\n");
+							ret_code = WEXITSTATUS(status);
+						}
+
+						remove_job(jobs, j);
+					} else {
+						//setpgid()
 					}
-					
-					remove_job(jobs, j);
 				}
 			}
 end_loop:
@@ -164,7 +169,7 @@ end_loop:
 		dup2(out,1);
 		dup2(err_out,2);
 		//peut mieux faire ici, mieux que remettre les 3 (2 sont inutiles)
-		update_jobs(jobs);
+		update_jobs(stderr, jobs);
 		update_prompt(count_jobs(jobs));
 		free(input);
 		free_index(current);
