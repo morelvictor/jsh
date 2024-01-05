@@ -95,10 +95,12 @@ int launch_cmd(w_index *pi){
 	int pid=fork();
 	switch(pid){
 		case -1 : 
-			perror("fork failed");
+			perror("fork");
 			exit(1);
 		case 0 : 
+			close(fd[0]);
 			dup2(fd[1],1);
+			close(fd[1]);
 			execvp(pi->words[0],pi->words);
 			perror("execvp");
 			exit(1);
@@ -112,21 +114,6 @@ int launch_cmd(w_index *pi){
 			
 	}
 	return fd[0];
-}
-int launch_test(w_index *pi){
-	switch(fork()){
-		case -1 : 
-			perror("fork");
-			exit(1);
-		case 0 : 
-			execvp(pi->words[0],pi->words);
-			perror("execvp");
-			exit(1);
-		default : 
-			wait(NULL);
-			break;
-	}
-	return 0;
 }
 
 //-1 : FAILED
@@ -172,7 +159,7 @@ w_index *substitute(w_index *pi){
 	return yeah;
 }
 /*int main(){
-	w_index *pi=split_space("diff  <( cat blob.txt ) <( ls . )");
+	w_index *pi=split_space("diff <( ls . ) <( cat blob.txt )");
 	w_index *ti=substitute(pi);
 	//print_index(ti);
 	if(fork()==0){
