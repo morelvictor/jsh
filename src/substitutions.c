@@ -68,12 +68,6 @@ void pos_close_sub(w_index *pi,int *t){
 		}
 	}
 }
-void print_tab(int *t,int len){
-	for(int i=0; i<len; ++i){
-		printf("%d  ",*(t+i));
-	}
-	puts("");
-}
 void get_cmds_sub(w_index **cmds, w_index *pi, int *t, int *p, int n){
 	for(int i=0; i<n; ++i){
 		cmds[i]=sub_index(pi,t[i]+1,p[i]);
@@ -86,7 +80,6 @@ int launch_cmd(w_index *pi){
 	else tmp=pi;*/
 
 	int out=dup(1);
-
 	int fd[2];
 	if(pipe(fd)==-1){
 		perror("pipe failed");
@@ -101,6 +94,7 @@ int launch_cmd(w_index *pi){
 			close(fd[0]);
 			dup2(fd[1],1);
 			close(fd[1]);
+			close(out);
 			execvp(pi->words[0],pi->words);
 			perror("execvp");
 			exit(1);
@@ -110,10 +104,10 @@ int launch_cmd(w_index *pi){
 			dup2(out,1);
 			close(fd[1]);
 			close(out);
+			return fd[0];
 			
 			
 	}
-	return fd[0];
 }
 
 //-1 : FAILED
@@ -160,10 +154,14 @@ w_index *substitute(w_index *pi){
 }
 /*int main(){
 	w_index *pi=split_space("diff <( ls . ) <( cat blob.txt )");
+	printf("%s\n",concat(pi));
 	w_index *ti=substitute(pi);
-	//print_index(ti);
+	puts("");
+	printf("%s\n",concat(ti));
+	puts("");
 	if(fork()==0){
-		//char *args[]={"sort","fic1"};
+		char *args[]={"cat",ti->words[1],NULL};
+		execvp("cat",args);
 		execvp(ti->words[0],ti->words);
 		perror("execvp");
 	}else{
