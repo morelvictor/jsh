@@ -6,31 +6,68 @@
 int count_substitutions(w_index* pi){
 	int n=0;
 	int m=0;
+	int acc=0; /*nombre de <( qui successifs*/
 	for(int i=0; i<pi->size; ++i){
-		if(strcmp("<(",pi->words[i])==0) ++n;
-		if(strcmp(")",pi->words[i])==0) ++m;
+		if(strcmp("<(",pi->words[i])==0){
+			if(acc==0) ++n;	
+			++acc;
+		}
+		if(strcmp(")",pi->words[i])==0) {
+			if(acc==1) ++m;
+			--acc;
+		}
 	}
+	//printf("n : %d , m : %d\n",n,m);
 	if(n!=m) return -1;
 	else return n;
 }
 
 void pos_open_sub(w_index *pi, int *t){
 	int acc_t=0;	
+	int acc=0;
+	for(int i=0; i<pi->size; ++i){
+		if(strcmp("<(",pi->words[i])==0){
+			if(acc==0) {
+				t[acc_t]=i;	
+				++acc_t;
+			}
+			++acc;
+		}
+		if(strcmp(")",pi->words[i])==0) {
+			--acc;
+		}
+	}
+	/*int acc_t=0;
 	for(int i=0; i<pi->size; ++i){
 		if(strcmp("<(",pi->words[i])==0){
 			t[acc_t]=i;
 			++acc_t;
 		}
-	}
+	}*/
 }
 void pos_close_sub(w_index *pi,int *t){
 	int acc_t=0;	
+	int acc=0; 
+	for(int i=0; i<pi->size; ++i){
+		if(strcmp("<(",pi->words[i])==0){
+			++acc;
+		}
+		if(strcmp(")",pi->words[i])==0) {
+			if(acc==1) {
+				t[acc_t]=i;
+				++acc_t;
+			}
+			--acc;
+		}
+	}
+
+	/*int acc_t=0;	
 	for(int i=0; i<pi->size; ++i){
 		if(strcmp(")",pi->words[i])==0){
 			t[acc_t]=i;
 			++acc_t;
 		}
-	}
+	}*/
 }
 void print_tab(int *t,int len){
 	for(int i=0; i<len; ++i){
@@ -137,6 +174,24 @@ w_index *substitute(w_index *pi){
 	}else{
 		wait(NULL);
 		printf("FINITO\n");
-	}	
+	}
+	w_index *pi=split_space("cmd1 <( cmd2 <( cmd3 <( cmd4 ) ) )");
+	const int n=count_substitutions(pi);
+
+	int t[n];
+	int p[n];
+	pos_open_sub(pi,t);
+	pos_close_sub(pi,p);
+
+	for(int i=0; i<n; ++i){
+		printf("%d ",t[i]);
+	}
+	puts("");
+	for(int i=0; i<n; ++i){
+		printf("%d ",p[i]);
+	}
+	puts("\n");
+
+	printf("1\n9\n");
 	exit(0);
 }*/
