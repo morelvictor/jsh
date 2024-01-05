@@ -82,6 +82,11 @@ void get_cmds_sub(w_index **cmds, w_index *pi, int *t, int *p, int n){
 	
 }
 int launch_cmd(w_index *pi){
+	printf("%s\n", concat(pi));
+	w_index *tmp=NULL;
+	if(is_substituted(pi)>0)tmp=substitute(pi);
+	else tmp=pi;
+	printf("%s\n", concat(tmp));
 	int out=dup(1);
 	int fd[2];
 	if(pipe(fd)==-1){
@@ -94,7 +99,7 @@ int launch_cmd(w_index *pi){
 			exit(1);
 		case 0 : 
 			dup2(fd[1],1);
-			execvp(pi->words[0],pi->words);
+			execvp(tmp->words[0],tmp->words);
 			perror("execvp");
 			exit(1);
 		default : 
@@ -105,6 +110,7 @@ int launch_cmd(w_index *pi){
 			
 			
 	}
+	printf("\n-------------\n");
 	return fd[1];
 }
 int launch_test(w_index *pi){
@@ -175,23 +181,8 @@ w_index *substitute(w_index *pi){
 		wait(NULL);
 		printf("FINITO\n");
 	}
-	w_index *pi=split_space("cmd1 <( cmd2 <( cmd3 <( cmd4 ) ) )");
-	const int n=count_substitutions(pi);
-
-	int t[n];
-	int p[n];
-	pos_open_sub(pi,t);
-	pos_close_sub(pi,p);
-
-	for(int i=0; i<n; ++i){
-		printf("%d ",t[i]);
-	}
-	puts("");
-	for(int i=0; i<n; ++i){
-		printf("%d ",p[i]);
-	}
-	puts("\n");
-
-	printf("1\n9\n");
+	w_index *pi=split_space("cat <( cat <(  ls . ) )");
+	w_index *ti=substitute(pi);
+	printf("%s\n",concat(ti));
 	exit(0);
 }*/
