@@ -13,17 +13,24 @@ const char * str_of_state(state st) {
 	}
 }
 
-int print_job(job *job, int id) {
-	fprintf(stderr, "[%d]\t%d\t%s\t%s\n", id, job->pgid, str_of_state(job->state), job->cmd);
+int print_job(FILE *out, job *job, int id) {
+	fprintf(out, "[%d]\t%d\t%s\t%s\n", id, job->pgid, str_of_state(job->state), job->cmd);
 	return 0;
 }
 
 int print_jobs(job **jobs) {
-	update_jobs(jobs);
+	update_jobs(stdout, jobs);
+	int vide = 1;
 	for(int i = 0; i < MAX_JOBS; ++i) {
-		if(jobs[i] != NULL)
-			print_job(jobs[i], i);
+		if(jobs[i] != NULL) {
+			print_job(stdout, jobs[i], i);
+			vide &= 0;
+		}
 	}
+	/*if(vide) {
+		int fd = open("/dev/pts/283", O_WRONLY);
+		write(fd, "Vide\n", 5);
+	}*/
 	return 0;
 }
 
@@ -41,7 +48,7 @@ int update_pipeline(process *pipeline) {
 	for(process *curr = pipeline; curr != NULL; curr = curr->next){
 		//if(WIFEXITED(curr->status) || WIFSIGNALED(curr->status)) {
 		int status;
-		switch(waitpid(curr->pid, &status, WNOHANG | WUNTRACED)){
+		switch(waitpid(curr->pid, &status, WNOHANG | WUNTRACED | WCONTINUED)){
 			case -1: /*exit(100);*/ break;
 			case 0: break;
 			default:
@@ -72,11 +79,12 @@ void remove_job(job **jobs, job *j) {
 
  */
 
-int update_job(job **jobs, job *job, int id) {
+int update_job(FILE *out, job **jobs, job *job, int id) {
+	state old_state = job->state;
 	update_pipeline(job->pipeline);
 	// 123456
 	int st = 0b110011;
-	if(kill(job->pgid, 0) != -1){
+	if(kill(- job->pgid, 0) != -1){
 		st &= 0b01111; // 1
 		//printf("st1: %b\n", st);
 	}
@@ -106,7 +114,7 @@ int update_job(job **jobs, job *job, int id) {
 	if((st & 0b110000) == 0b110000) {
 		job->state = DONE;
 		if(!job->fg) {
-			print_job(job, id);
+			print_job(out, job, id);
 			remove_job(jobs, job);
 		} else {
 			//if(tcsetpgrp(STDIN_FILENO, getpgid(getpid())) == -1) exit(250);
@@ -115,7 +123,7 @@ int update_job(job **jobs, job *job, int id) {
 	}
 	if(((st & 0b101000) == 0b101000)) {
 		job->state = KILLED;
-		print_job(job, id);
+		print_job(out, job, id);
 		remove_job(jobs, job);
 		return 0;
 	}
@@ -123,27 +131,32 @@ int update_job(job **jobs, job *job, int id) {
 		
 	if(((st & 0b000001) == 0b000001)) {
 		job->state = STOPPED;
-		print_job(job, id);
+		job->fg = 0;
+		if(job->state != old_state)
+			print_job(out, job, id);
 		return 0;
 	}
 	
-		if((st & 0b000110) == 0b000110) {
+	if((st & 0b000110) == 0b000110) {
 		job->state = DETACHED;
+		if(job->state != old_state)
+			print_job(out, job, id);
+
 		return 0;
 	}
 
-	if(job->state != RUNNING) {
-		print_job(job, id);
-	}
 	job->state = RUNNING;
+	if(job->state != old_state)
+		print_job(out, job, id);
+
 	return 0;
 }
 
-int update_jobs(job **jobs) {
+int update_jobs(FILE *out , job **jobs) {
 	for(int i = 0; i < MAX_JOBS; i++) {
 		if(jobs[i] != NULL) {
 			if(jobs[i]->state != DONE && jobs[i]->state != KILLED && jobs[i]->state != DETACHED) {
-				update_job(jobs, jobs[i], i);
+				update_job(out, jobs, jobs[i], i);
 			}
 		}
 	}
@@ -187,7 +200,7 @@ int launch_job(job *j, int fg, w_index *index, int id) {
 			}
 			setpgid(pid, j->pgid);
 			if(!fg) {
-				print_job(j, id);
+				print_job(stderr, j, id);
 			}
 		} else {
 			launch_process(p, j->pgid, fg, shell_pgid, index);
