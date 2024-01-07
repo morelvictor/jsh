@@ -6,15 +6,15 @@
 int count_substitutions(w_index* pi){
 	int n=0;
 	int m=0;
-	//int acc=0;
+	int acc=0;
 	for(int i=0; i<pi->size; ++i){
 		if(strcmp("<(",pi->words[i])==0){
-			/*if(acc==0)*/ ++n;	
-			//++acc;
+			if(acc==0) ++n;	
+			++acc;
 		}
 		if(strcmp(")",pi->words[i])==0) {
-			/*if(acc==1)*/ ++m;
-			//--acc;
+			if(acc==1) ++m;
+			--acc;
 		}
 	}
 	if(n!=m) return -1;
@@ -22,7 +22,7 @@ int count_substitutions(w_index* pi){
 }
 
 void pos_open_sub(w_index *pi, int *t){
-	/*int acc_t=0;	
+	int acc_t=0;	
 	int acc=0;
 	for(int i=0; i<pi->size; ++i){
 		if(strcmp("<(",pi->words[i])==0){
@@ -35,17 +35,17 @@ void pos_open_sub(w_index *pi, int *t){
 		if(strcmp(")",pi->words[i])==0) {
 			--acc;
 		}
-	}*/
-	int acc_t=0;
+	}
+	/*int acc_t=0;
 	for(int i=0; i<pi->size; ++i){
 		if(strcmp("<(",pi->words[i])==0){
 			t[acc_t]=i;
 			++acc_t;
 		}
-	}
+	}*/
 }
 void pos_close_sub(w_index *pi,int *t){
-	/*int acc_t=0;	
+	int acc_t=0;	
 	int acc=0; 
 	for(int i=0; i<pi->size; ++i){
 		if(strcmp("<(",pi->words[i])==0){
@@ -58,15 +58,15 @@ void pos_close_sub(w_index *pi,int *t){
 			}
 			--acc;
 		}
-	}*/
+	}
 
-	int acc_t=0;	
+	/*int acc_t=0;	
 	for(int i=0; i<pi->size; ++i){
 		if(strcmp(")",pi->words[i])==0){
 			t[acc_t]=i;
 			++acc_t;
 		}
-	}
+	}*/
 }
 void get_cmds_sub(w_index **cmds, w_index *pi, int *t, int *p, int n){
 	for(int i=0; i<n; ++i){
@@ -75,9 +75,9 @@ void get_cmds_sub(w_index **cmds, w_index *pi, int *t, int *p, int n){
 	
 }
 int launch_cmd(w_index *pi){
-	/*w_index *tmp=NULL;
+	w_index *tmp=NULL;
 	if(is_substituted(pi)>0)tmp=substitute(pi);
-	else tmp=pi;*/
+	else tmp=pi;
 
 	int out=dup(1);
 	int fd[2];
@@ -95,7 +95,7 @@ int launch_cmd(w_index *pi){
 			dup2(fd[1],1);
 			close(fd[1]);
 			close(out);
-			execvp(pi->words[0],pi->words);
+			execvp(tmp->words[0],tmp->words);
 			perror("execvp");
 			exit(1);
 		default : 
