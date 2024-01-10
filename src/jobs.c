@@ -1,6 +1,7 @@
 #include "jobs.h"
 #include "redirections.h"
 #include "parser.h"
+#include "pipe.h"
 
 const char * str_of_state(state st) {
 	switch(st){
@@ -214,16 +215,37 @@ job *exec_command(char *cmd, w_index *index, int fg, job **jobs) {
 	new_job->cmd = concat(index);
 	new_job->state = RUNNING;
 	new_job->fg = fg;
-	process *first_process = malloc(sizeof(process));
-	first_process->cmd = malloc(strlen(cmd) + 1);
-	strcpy(first_process->cmd, cmd);
-	first_process->next = NULL;
-	first_process->status = -1;
-	first_process->cmd_index = index;
-	new_job->pipeline=first_process;
+//	process *first_process = malloc(sizeof(process));
+//	first_process->cmd = concat(index);
+
+	// On génère le tableau des pipes
+	int n_pipes = count_pipe(index);
+	w_index **cmds = malloc(sizeof(w_index *) * (n_pipes + 1));
+	get_cmds_pipe(index, cmds, n_pipes);
+
+	// Construction de la pipeline
+	process *current = NULL;
+	for(int i = 0; i < n_pipes + 1; ++i) {
+		if(current != NULL) {
+			current->next = malloc(sizeof(process));
+			current = current->next;
+		} else {
+			current = malloc(sizeof(process));
+			new_job->pipeline = current;
+		}
+		current->cmd = concat(cmds[i]);
+		current->status = -1;
+		current->cmd_index = cmds[i];
+		current->pid = 0;
+	}
+	current->next = NULL;
+	free(cmds);
+
+	//first_process->next = NULL;
+	//first_process->status = -1;
+	//first_process->cmd_index = index;
 	new_job->pgid = 0;
 	int id = -1;
-	//if(!fg) {
 		for(int i = 0; i < MAX_JOBS; ++i) {
 			if(jobs[i] == NULL) {
 				jobs[i] = new_job;
@@ -231,18 +253,15 @@ job *exec_command(char *cmd, w_index *index, int fg, job **jobs) {
 				break;
 			}
 		}
-	//}
 	new_job->id = id;
 	launch_job(new_job, fg, index, id);
-	/*if(fg) {
-		free_job(new_job);
-	}*/
 	return new_job;
 }
 
 void free_process(process *p){
 	if(p->next!=NULL) free_process(p->next);
 	free(p->cmd);
+	free_index(p->cmd_index);
 	free(p);
 }
 

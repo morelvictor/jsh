@@ -138,11 +138,5 @@ void add_word(w_index *pi,char *s){
 	pi->size=pi->size+1;
 	//pi->words[pi->size+1]=NULL;
 }
-/*int main(){
-	w_index *pi=split_space("hola me llamo Jana");
-	add_word(pi,"Ayadi");
-	print_index(pi);
-	free_index(pi);
-	exit(0);
-}*/
+
 

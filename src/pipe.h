@@ -9,7 +9,7 @@
 
 int count_pipe(w_index *);
 void pos_pipe(w_index *, int *);
-void get_cmds_pipe(w_index *, w_index **);
+void get_cmds_pipe(w_index *, w_index **, int);
 
 
 #endif

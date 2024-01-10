@@ -42,7 +42,6 @@ int main() {
 			exit(10);
 		}
 		add_history(input);
-		//TODO
 		index = split_space(input);
 		
 		
@@ -60,7 +59,6 @@ int main() {
 			if(!strcmp(index->words[index->size - 1], "&")) {
 				fg = 0;
 				w_index *new_i = sub_index(index, 0, index->size - 1);
-				//TODO
 				free_index(index);
 				index = new_i;
 				//print_index(index);
