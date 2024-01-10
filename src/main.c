@@ -11,6 +11,7 @@
 #include "jobs.h"
 #include "shell.h"
 #include "redirections.h"
+#include "substitutions.h"
 
 int main() {
 
@@ -43,7 +44,19 @@ int main() {
 		add_history(input);
 		//TODO
 		index = split_space(input);
+		
+		
 		if(index->size != 0) {
+			int n=is_substituted(index);
+			if(n==-1 || n==-2) goto end_loop;
+			if(n>0) {
+				w_index *ti=substitute(index);
+				if(ti==NULL) goto end_loop;
+				free_index(index);
+				index=ti;
+			}
+
+
 			if(!strcmp(index->words[index->size - 1], "&")) {
 				fg = 0;
 				w_index *new_i = sub_index(index, 0, index->size - 1);
