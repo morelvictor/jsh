@@ -112,7 +112,7 @@ w_index *split_space(char *s) {
 w_index *split_semicolon(char *s) {
 	return cons_index(is_semicolon , s);
 }
-char * concat(w_index *pi){
+char *concat(w_index *pi){
 	int len=0;
 	for(int i=0; i<pi->size; ++i){
 		len+=strlen(pi->words[i]);
@@ -131,5 +131,18 @@ char * concat(w_index *pi){
 	return s;
 	
 }
-
+void add_word(w_index *pi,char *s){
+	pi->words=realloc(pi->words,(pi->size+1)*sizeof(char*));
+	pi->words[pi->size]=malloc((strlen(s)+1)*sizeof(char));
+	strcpy(pi->words[pi->size],s);
+	pi->size=pi->size+1;
+	//pi->words[pi->size+1]=NULL;
+}
+/*int main(){
+	w_index *pi=split_space("hola me llamo Jana");
+	add_word(pi,"Ayadi");
+	print_index(pi);
+	free_index(pi);
+	exit(0);
+}*/
 
