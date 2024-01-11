@@ -124,7 +124,8 @@ int update_job(FILE *out, job **jobs, job *job, int id) {
 	}
 	if(((st & 0b101000) == 0b101000)) {
 		job->state = KILLED;
-		print_job(out, job, id);
+		if(!job->fg)
+			print_job(out, job, id);
 		remove_job(jobs, job);
 		return 0;
 	}
@@ -188,10 +189,16 @@ void launch_process(process *p, int pgid, int fg, int shell_pgid, w_index *index
 	exit(234);
 }
 
-int launch_job(job *j, int fg, w_index *index, int id) {
+int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 	process *p;
 	int pid;
 	int shell_pgid = getpgid(getpid());
+	int pipes[n_pipes][2];
+	for(int i = 0; i < n_pipes; i++) {
+		pipe(pipes[i]);
+	}
+	
+	int i = 0;
 	for(p = j->pipeline; p; p = p->next) {
 		if((pid = fork()) != 0) {
 			
@@ -203,8 +210,28 @@ int launch_job(job *j, int fg, w_index *index, int id) {
 			if(!fg) {
 				print_job(stderr, j, id);
 			}
+
 		} else {
-			launch_process(p, j->pgid, fg, shell_pgid, index);
+			
+			if(i > 0) {
+				dup2(pipes[i-1][0], STDIN_FILENO);
+			}
+			if(i <= n_pipes-1) {
+				dup2(pipes[i][1], STDOUT_FILENO);
+			}
+			for(int j = 0; j < n_pipes; ++j) {
+				close(pipes[j][0]);
+				close(pipes[j][1]);
+			}
+			
+			launch_process(p, j->pgid, fg, shell_pgid, p->cmd_index);
+		}
+		++i;
+	}
+	if(pid) {
+		for(i = 0; i < n_pipes; i++) {
+			close(pipes[i][0]);
+			close(pipes[i][1]);
 		}
 	}
 	return pid;
@@ -225,7 +252,7 @@ job *exec_command(char *cmd, w_index *index, int fg, job **jobs) {
 
 	// Construction de la pipeline
 	process *current = NULL;
-	for(int i = 0; i < n_pipes + 1; ++i) {
+	for(int i = 0; i <= n_pipes; ++i) {
 		if(current != NULL) {
 			current->next = malloc(sizeof(process));
 			current = current->next;
@@ -254,7 +281,7 @@ job *exec_command(char *cmd, w_index *index, int fg, job **jobs) {
 			}
 		}
 	new_job->id = id;
-	launch_job(new_job, fg, index, id);
+	launch_job(new_job, fg, index, id, n_pipes);
 	return new_job;
 }
 
