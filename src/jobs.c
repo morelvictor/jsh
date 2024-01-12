@@ -191,9 +191,6 @@ void launch_process(process *p, int pgid, int fg, int shell_pgid, w_index *index
 
 int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 	process *p;
-	int in=dup(0);
-	int err=dup(2);
-	int out = dup(1);
 	int pid;
 	int shell_pgid = getpgid(getpid());
 	int pipes[n_pipes][2];

@@ -18,27 +18,28 @@ int main() {
 	int in=dup(0);
 	int out=dup(1);
 	int err_out=dup(2);
-	char *input;
+	char *tmp_inp;
+	char input[2000];
 	w_index *current;
 	w_index *index;
 	w_index *sub;
 	int nb;
-	extern char* prompt;
-	prompt = malloc(256);
-	int res=update_prompt(0);
+	char prompt[256];
+	int res=update_prompt(prompt, 0);
 	rl_initialize();
 	rl_outstream=stderr;
 	init_shell();
-	jobs = calloc(MAX_JOBS, sizeof(job *));
+	job *jobs[MAX_JOBS];
+	memset(jobs, 0, MAX_JOBS * sizeof(job *));
 	int fg = 1;
 
 	setenv("?", "0", 1);
 
-	while((input = readline(prompt)) != NULL) {
+	while((tmp_inp = readline(prompt)) != NULL) {
+		strcpy(input, tmp_inp);
+		free(tmp_inp);
 		int ret_code=0;
 		if(res) {
-			free(input);
-			free(prompt);
 			exit(10);
 		}
 		add_history(input);
@@ -181,14 +182,12 @@ end_loop:
 		dup2(err_out,2);
 		//peut mieux faire ici, mieux que remettre les 3 (2 sont inutiles)
 		update_jobs(stderr, jobs);
-		update_prompt(count_jobs(jobs));
-		free(input);
+		update_prompt(prompt, count_jobs(jobs));
 		free_index(current);
 		if(nb>0) free_index(index);
 		fg = 1;
 	}
-	free(prompt);
-	free_jobs(jobs);
+	//free_jobs(jobs);
 	//free(jobs);
 	char *last = getenv("?");
 	return last == NULL ? 0 : atoi(last);

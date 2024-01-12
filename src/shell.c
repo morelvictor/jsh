@@ -3,7 +3,7 @@
 int shell_pgid;
 int shell_terminal;
 
-job **jobs = NULL;
+//job **jobs = NULL;
 
 /* Make sure the shell is running interactively as the foreground job
    before proceeding. */
