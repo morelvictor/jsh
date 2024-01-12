@@ -191,6 +191,9 @@ void launch_process(process *p, int pgid, int fg, int shell_pgid, w_index *index
 
 int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 	process *p;
+	int in=dup(0);
+	int err=dup(2);
+	int out = dup(1);
 	int pid;
 	int shell_pgid = getpgid(getpid());
 	int pipes[n_pipes][2];
@@ -212,18 +215,25 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 			}
 
 		} else {
-			
 			if(i > 0) {
 				dup2(pipes[i-1][0], STDIN_FILENO);
 			}
 			if(i <= n_pipes-1) {
-				dup2(pipes[i][1], STDOUT_FILENO);
+				dup2(pipes[i][1],STDOUT_FILENO);
 			}
 			for(int j = 0; j < n_pipes; ++j) {
 				close(pipes[j][0]);
 				close(pipes[j][1]);
 			}
-			
+			int nb=check_redirection(p->cmd_index);
+			if(nb==-2 || nb== -1) {
+				perror("redirections");
+				exit(1);
+			}
+			if(nb>=0){
+				p->cmd_index = sub_index(p->cmd_index,0,nb);
+			}
+
 			launch_process(p, j->pgid, fg, shell_pgid, p->cmd_index);
 		}
 		++i;
