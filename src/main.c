@@ -20,17 +20,13 @@
 	w_index **cmds = malloc(sizeof(w_index *) * (n + 1));
 	get_cmds_pipe(pi, cmds, n);
 	for(int i=0; i<=n;++i){
-		free_index(cmds[i]);
+		-free_index(cmds[i]);
 	}
-	free_index(pi);
+	-free_index(pi);
 	free(cmds);
 	return 0;
-
-	
 }*/
 int main() {
-	
-
 	int in=dup(0);
 	int out=dup(1);
 	int err_out=dup(2);
@@ -65,7 +61,7 @@ int main() {
 			if(n>0) {
 				w_index *ti=substitute(index);
 				if(ti==NULL) goto end_loop;
-				free_index(index);
+				//-free_index(index);
 				index=ti;
 			}
 
@@ -73,7 +69,7 @@ int main() {
 			if(!strcmp(index->words[index->size - 1], "&")) {
 				fg = 0;
 				w_index *new_i = sub_index(index, 0, index->size - 1);
-				free_index(index);
+				//-free_index(index);
 				index = new_i;
 				//print_index(index);
 			}

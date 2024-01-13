@@ -204,25 +204,39 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 
 	int i = 0;
 	for(p = j->pipeline; p; p = p->next) {
-		if(strcmp(index->words[0],"cd")==0){
+		int nb=check_redirection(p->cmd_index);
+		if(nb==-2 || nb== -1) {
+			perror("redirections");
+			dup2(in,STDIN_FILENO);
+			dup2(out,STDOUT_FILENO);
+			dup2(err,STDERR_FILENO);
+			ret_code = 1;
+			return -1;
+
+		}
+		if(nb>=0){
+			w_index *tmp=p->cmd_index;
+			p->cmd_index = sub_index(p->cmd_index,0,nb);
+			free_index(tmp);
+		}
+		if(strcmp(p->cmd_index->words[0],"cd")==0){
 			is_interne |= 1;
-			ret_code = cd(index);
-		} else if(strcmp(index->words[0],"pwd")==0){
+			ret_code = cd(p->cmd_index);
+		} else if(strcmp(p->cmd_index->words[0],"pwd")==0){
 			is_interne |= 1;
-			ret_code = pwd(index);
-		} else if(strcmp(index->words[0], "?") == 0) {
+			ret_code = pwd(p->cmd_index);
+		} else if(strcmp(p->cmd_index->words[0], "?") == 0) {
 			is_interne |= 1;
 			ret_code = return_code();
-			//free_index(index);
-		} else if(strcmp(index->words[0], "exit") == 0){
+		} else if(strcmp(p->cmd_index->words[0], "exit") == 0){
 			is_interne |= 1;
-			exit_shell(index);
-		} else if(strcmp(index->words[0], "kill")==0) {
+			ret_code = exit_shell(p->cmd_index);
+		} else if(strcmp(p->cmd_index->words[0], "kill")==0) {
 			is_interne |= 1;
-			ret_code = kill_job(index);
-		} else if(strcmp(index->words[0], "jobs") == 0) {
+			ret_code = kill_job(p->cmd_index);
+		} else if(strcmp(p->cmd_index->words[0], "jobs") == 0) {
 			is_interne |= 1;
-			ret_code = p_jobs(index);
+			ret_code = p_jobs(p->cmd_index);
 		} else if((pid = fork()) != 0) {
 
 			p->pid = pid;
@@ -246,15 +260,7 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 				close(pipes[j][0]);
 				close(pipes[j][1]);
 			}
-			int nb=check_redirection(p->cmd_index);
-			if(nb==-2 || nb== -1) {
-				perror("redirections");
-				exit(1);
-			}
-			if(nb>=0){
-				//TODO
-				p->cmd_index = sub_index(p->cmd_index,0,nb);
-			}
+
 
 			launch_process(p, j->pgid, fg, shell_pgid, p->cmd_index);
 		}
@@ -263,6 +269,7 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 		dup2(err,STDERR_FILENO);
 		++i;
 	}
+
 	
 	if(!is_interne && pid) {
 		for(i = 0; i < n_pipes; i++) {
@@ -322,6 +329,9 @@ job *exec_command(char *cmd, w_index *index, int fg, job **jobs) {
 	new_job->id = id;
 	if (launch_job(new_job, fg, index, id, n_pipes) != -1)
 		jobs[id] = new_job;
+	else
+		free_job(new_job);
+
 	free_index(index);
 	return new_job;
 }
@@ -329,7 +339,7 @@ job *exec_command(char *cmd, w_index *index, int fg, job **jobs) {
 void free_process(process *p){
 	if(p->next!=NULL) free_process(p->next);
 	free(p->cmd);
-	//free_index(p->cmd_index);
+	free_index(p->cmd_index);
 	free(p);
 }
 
