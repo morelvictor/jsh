@@ -2,6 +2,7 @@
 #include "redirections.h"
 #include "parser.h"
 #include "pipe.h"
+#include "internes.h"
 
 const char * str_of_state(state st) {
 	switch(st){
@@ -19,6 +20,14 @@ int print_job(FILE *out, job *job, int id) {
 	return 0;
 }
 
+int exist(job **jobs, job *j) {
+	for(int i = 0; i < MAX_JOBS; ++i) {
+		if(jobs[i] == j)
+			return 1;
+	}
+	return 0;
+}
+
 int print_jobs(job **jobs) {
 	update_jobs(stdout, jobs);
 	int vide = 1;
@@ -29,9 +38,9 @@ int print_jobs(job **jobs) {
 		}
 	}
 	/*if(vide) {
-		int fd = open("/dev/pts/283", O_WRONLY);
-		write(fd, "Vide\n", 5);
-	}*/
+	  int fd = open("/dev/pts/283", O_WRONLY);
+	  write(fd, "Vide\n", 5);
+	  }*/
 	return 0;
 }
 
@@ -87,28 +96,28 @@ int update_job(FILE *out, job **jobs, job *job, int id) {
 	int st = 0b110011;
 	if(kill(- job->pgid, 0) != -1){
 		st &= 0b01111; // 1
-		//printf("st1: %b\n", st);
+			       //printf("st1: %b\n", st);
 	}
 	else {
 		st |= 0b000100; // 4
-		//printf("st4: %b\n", st);
+				//printf("st4: %b\n", st);
 	}
 	for(process *curr = job->pipeline; curr != NULL; curr = curr->next){
 		if(WIFSIGNALED(curr->status)) {
 			st |= 0b001000; // 3
-		//printf("st3: %b\n", st);
+					//printf("st3: %b\n", st);
 		}
 		if(!WIFEXITED(curr->status)) {
 			st &= 0b101111; // 2
-		//printf("st2: %b\n", st);
+					//printf("st2: %b\n", st);
 		}
 		if(!WIFEXITED(curr->status) && !WIFSIGNALED(curr->status)) {
 			st &= 0b111101; // 5
-		//printf("st5: %b\n", st);
+					//printf("st5: %b\n", st);
 		}
 		if(!WIFEXITED(curr->status) && !WIFSIGNALED(curr->status) && !WIFSTOPPED(curr->status)) {
 			st &= 0b111110; //6
-		//printf("st6: %b\n", st);
+					//printf("st6: %b\n", st);
 		}
 	}
 
@@ -130,7 +139,7 @@ int update_job(FILE *out, job **jobs, job *job, int id) {
 		return 0;
 	}
 
-		
+
 	if(((st & 0b000001) == 0b000001)) {
 		job->state = STOPPED;
 		job->fg = 0;
@@ -138,7 +147,7 @@ int update_job(FILE *out, job **jobs, job *job, int id) {
 			print_job(out, job, id);
 		return 0;
 	}
-	
+
 	if((st & 0b000110) == 0b000110) {
 		job->state = DETACHED;
 		if(job->state != old_state)
@@ -174,34 +183,48 @@ void launch_process(process *p, int pgid, int fg, int shell_pgid, w_index *index
 	if(pgid == 0) pgid = pid;
 	if(!fg) setpgid(pid, pgid);
 	else setpgid(pid, shell_pgid);
-	/*
-	   signal (SIGINT, SIG_DFL);
-	   signal (SIGQUIT, SIG_DFL);
-	   signal (SIGTSTP, SIG_DFL);
-	   signal (SIGTTIN, SIG_DFL);
-	   signal (SIGTTOU, SIG_DFL);
-	   signal (SIGCHLD, SIG_DFL);
-	 */
-	//check_redirection(index);
-	//if(tcgetpgrp(STDIN_FILENO) == pgid) fprintf(stderr, "Oui\n");
 	execvp(index->words[0], index->words);
 	perror("execvp");
+	//free_index(index);
 	exit(234);
 }
 
 int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
+	int in=dup(STDIN_FILENO);
+	int out=dup(STDOUT_FILENO);
+	int err=dup(STDERR_FILENO);
 	process *p;
 	int pid;
 	int shell_pgid = getpgid(getpid());
 	int pipes[n_pipes][2];
+	int is_interne = 0;
 	for(int i = 0; i < n_pipes; i++) {
 		pipe(pipes[i]);
 	}
-	
+
 	int i = 0;
 	for(p = j->pipeline; p; p = p->next) {
-		if((pid = fork()) != 0) {
-			
+		if(strcmp(index->words[0],"cd")==0){
+			is_interne |= 1;
+			ret_code = cd(index);
+		} else if(strcmp(index->words[0],"pwd")==0){
+			is_interne |= 1;
+			ret_code = pwd(index);
+		} else if(strcmp(index->words[0], "?") == 0) {
+			is_interne |= 1;
+			ret_code = return_code();
+			//free_index(index);
+		} else if(strcmp(index->words[0], "exit") == 0){
+			is_interne |= 1;
+			exit_shell(index);
+		} else if(strcmp(index->words[0], "kill")==0) {
+			is_interne |= 1;
+			ret_code = kill_job(index);
+		} else if(strcmp(index->words[0], "jobs") == 0) {
+			is_interne |= 1;
+			ret_code = p_jobs(index);
+		} else if((pid = fork()) != 0) {
+
 			p->pid = pid;
 			if(!j->pgid) {
 				j->pgid = pid;
@@ -210,6 +233,7 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 			if(!fg) {
 				print_job(stderr, j, id);
 			}
+			//free_index(index);
 
 		} else {
 			if(i > 0) {
@@ -228,19 +252,27 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 				exit(1);
 			}
 			if(nb>=0){
+				//TODO
 				p->cmd_index = sub_index(p->cmd_index,0,nb);
 			}
 
 			launch_process(p, j->pgid, fg, shell_pgid, p->cmd_index);
 		}
+		dup2(in,STDIN_FILENO);
+		dup2(out,STDOUT_FILENO);
+		dup2(err,STDERR_FILENO);
 		++i;
 	}
-	if(pid) {
+	
+	if(!is_interne && pid) {
 		for(i = 0; i < n_pipes; i++) {
 			close(pipes[i][0]);
 			close(pipes[i][1]);
 		}
 	}
+
+	if(is_interne)
+		return -1;
 	return pid;
 }
 
@@ -249,8 +281,8 @@ job *exec_command(char *cmd, w_index *index, int fg, job **jobs) {
 	new_job->cmd = concat(index);
 	new_job->state = RUNNING;
 	new_job->fg = fg;
-//	process *first_process = malloc(sizeof(process));
-//	first_process->cmd = concat(index);
+	//	process *first_process = malloc(sizeof(process));
+	//	first_process->cmd = concat(index);
 
 	// On génère le tableau des pipes
 	int n_pipes = count_pipe(index);
@@ -280,22 +312,24 @@ job *exec_command(char *cmd, w_index *index, int fg, job **jobs) {
 	//first_process->cmd_index = index;
 	new_job->pgid = 0;
 	int id = -1;
-		for(int i = 0; i < MAX_JOBS; ++i) {
-			if(jobs[i] == NULL) {
-				jobs[i] = new_job;
-				id = i;
-				break;
-			}
+	for(int i = 0; i < MAX_JOBS; ++i) {
+		if(jobs[i] == NULL) {
+			//TODO jobs[i] = new_job;
+			id = i;
+			break;
 		}
+	}
 	new_job->id = id;
-	launch_job(new_job, fg, index, id, n_pipes);
+	if (launch_job(new_job, fg, index, id, n_pipes) != -1)
+		jobs[id] = new_job;
+	free_index(index);
 	return new_job;
 }
 
 void free_process(process *p){
 	if(p->next!=NULL) free_process(p->next);
 	free(p->cmd);
-	free_index(p->cmd_index);
+	//free_index(p->cmd_index);
 	free(p);
 }
 
@@ -314,6 +348,8 @@ void free_jobs(job **jobs){
 
 
 int are_jobs_running(job **jobs) {
-    if(count_jobs(jobs)>0)return 1;
-    return 0;  // Aucun job en cours d'exécution ou suspendu
+	if(count_jobs(jobs)>0)return 1;
+	return 0;  // Aucun job en cours d'exécution ou suspendu
 }
+
+

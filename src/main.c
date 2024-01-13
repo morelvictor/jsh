@@ -12,40 +12,53 @@
 #include "shell.h"
 #include "redirections.h"
 #include "substitutions.h"
+#include "pipe.h"
 
+/*int main(){
+	w_index *pi=split_space("cmd1 -option");
+	int n=count_pipe(pi);
+	w_index **cmds = malloc(sizeof(w_index *) * (n + 1));
+	get_cmds_pipe(pi, cmds, n);
+	for(int i=0; i<=n;++i){
+		free_index(cmds[i]);
+	}
+	free_index(pi);
+	free(cmds);
+	return 0;
+
+	
+}*/
 int main() {
+	
 
 	int in=dup(0);
 	int out=dup(1);
 	int err_out=dup(2);
 	char *tmp_inp;
 	char input[2000];
-	w_index *current;
 	w_index *index;
-	w_index *sub;
-	int nb;
 	char prompt[256];
 	int res=update_prompt(prompt, 0);
 	rl_initialize();
 	rl_outstream=stderr;
-	init_shell();
-	job *jobs[MAX_JOBS];
+	extern job *jobs[MAX_JOBS];
 	memset(jobs, 0, MAX_JOBS * sizeof(job *));
 	int fg = 1;
+	extern int ret_code;
+	ret_code = 0;
 
 	setenv("?", "0", 1);
 
 	while((tmp_inp = readline(prompt)) != NULL) {
 		strcpy(input, tmp_inp);
 		free(tmp_inp);
-		int ret_code=0;
 		if(res) {
 			exit(10);
 		}
 		add_history(input);
 		index = split_space(input);
-		
-		
+
+
 		if(index->size != 0) {
 			int n=is_substituted(index);
 			if(n==-1 || n==-2) goto end_loop;
@@ -64,97 +77,10 @@ int main() {
 				index = new_i;
 				//print_index(index);
 			}
-		}
-		current=index;
-		nb=check_redirection(index);
-		if(nb==-2 || nb== -1) {
-			ret_code=1;
-			goto end_loop;
-		}
-		if(nb>=0){
-			sub=sub_index(index,0,nb);
-			current=sub;
-		}
-
-		if(current->size != 0) {
-			if(strcmp(current->words[0],"cd")==0){
-				if(current->size==1){
-					ret_code = cd(NULL);
-				}else{
-					ret_code = cd(current->words[1]);
-				}
-			} else if(strcmp(current->words[0],"pwd")==0){
-				ret_code = pwd();
-			} else if(strcmp(current->words[0], "?") == 0) {
-				ret_code = return_code();
-			} else if(strcmp(index->words[0], "exit") == 0){
-
-				// Vérifier si des jobs sont en cours d'exécution ou suspendus
-				if (are_jobs_running(jobs)) {
-					fprintf(stderr, "There is %d job.\n", count_jobs(jobs));
-					ret_code = 1;
-					goto end_loop;
-				}
-
-				if (current->size == 1) {
-					// Pas d'argument pour exit, terminer le shell
-					char *last = getenv("?");
-					int value = atoi(last);
-					free_index(index);
-					exit(value);
-				} else if (index->size == 2) {
-					// terminer le shell avec la valeur de retour spécifiée
-					int value = atoi(current->words[1]);
-					free_index(index);
-					exit(value);
-				} else {
-					//erreur
-					goto end_loop;
-				}
-
-
-
-
-			} else if(strcmp(index->words[0], "kill")==0) {
-				int signal;
-				int target;
-				int job_or_not=1;
-
-				if (index->size<2 || index->size>3){
-					goto end_loop;
-				}
-				if(index->size==2){
-					signal=SIGTERM;
-					if(index->words[1][0]!='%'){
-						target=atoi(index->words[1]);
-						job_or_not=0;
-					} else {
-						//memmove(index->words[1], index->words[1] + 1, strlen(index->words[1]));
-						//target = atoi(index->words[1]);
-						target=atoi(index->words[1]+1);
-					}
-				} else {
-					//	signal=(index->words[1][1]=='\0')? (index->words[1][1]- '0') : ((index->words[1][1] - '0') * 10 + (index->words[1][2] - '0'));
-					signal= atoi(index->words[1]+1);
-					if(index->words[2][0]!='%'){
-						target=atoi(index->words[2]);
-						job_or_not=0;
-					} else {
-						// memmove(index->words[2], index->words[2]+ 1, strlen(index->words[2]));
-						// target = atoi(index->words[2]);
-						target=atoi(index->words[2]+1);
-					}
-				}
-				send_signal(jobs, signal, target, job_or_not);
-
-
-
-			} else if(strcmp(index->words[0], "jobs") == 0) {
-				ret_code = print_jobs(jobs);
-			} else {
-				int status;
-				job *j = exec_command(input, current, fg, jobs);
-				if(fg) {
+			int status;
+			job *j = exec_command(input, index, fg, jobs);
+			if(fg) {
+				if(exist(jobs, j)) {
 					do {
 						update_job(stderr, jobs, j, j->id);
 					} while(j->state == RUNNING && j->fg);
@@ -172,25 +98,26 @@ int main() {
 					}
 				}
 			}
-end_loop:
-			char buff[8];
-			sprintf(buff, "%d", ret_code);
-			setenv("?", buff, 1);
 		}
+		//free_index(index);
+		//}
+end_loop:
+		char buff[8];
+		sprintf(buff, "%d", ret_code);
+		setenv("?", buff, 1);
+		//}
 		dup2(in,0);
 		dup2(out,1);
 		dup2(err_out,2);
 		//peut mieux faire ici, mieux que remettre les 3 (2 sont inutiles)
 		update_jobs(stderr, jobs);
 		update_prompt(prompt, count_jobs(jobs));
-		free_index(current);
-		if(nb>0) free_index(index);
 		fg = 1;
-	}
-	//free_jobs(jobs);
-	//free(jobs);
-	char *last = getenv("?");
-	return last == NULL ? 0 : atoi(last);
+		}
+//free_jobs(jobs);
+//free(jobs);
+char *last = getenv("?");
+return last == NULL ? 0 : atoi(last);
 }
 
 
