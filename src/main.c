@@ -53,7 +53,7 @@ int main() {
 		}
 		add_history(input);
 		index = split_space(input);
-
+		current_index=index;
 
 		if(index->size != 0) {
 			int n=is_substituted(index);
@@ -68,9 +68,10 @@ int main() {
 
 			if(!strcmp(index->words[index->size - 1], "&")) {
 				fg = 0;
-				w_index *new_i = sub_index(index, 0, index->size - 1);
-				//-free_index(index);
-				index = new_i;
+				w_index *tmp=index;
+				index = sub_index(index, 0, index->size - 1);
+				free_index(tmp);
+				current_index=index;
 				//print_index(index);
 			}
 			int status;

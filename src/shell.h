@@ -11,5 +11,6 @@
 
 extern job *jobs[MAX_JOBS];
 extern int ret_code;
+extern w_index *current_index;
 
 #endif

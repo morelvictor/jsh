@@ -93,16 +93,16 @@ int exit_shell(w_index *index) {
 		// Pas d'argument pour exit, terminer le shell
 		char *last = getenv("?");
 		int value = atoi(last);
-		//free_index(index);
+		free_index(index);
+		free_index(current_index);
 		exit(value);
 	} else if (index->size >= 2) {
 		// terminer le shell avec la valeur de retour spécifiée
 		int value = atoi(index->words[1]);
-		//free_index(index);
+		free_index(index);
+		free_index(current_index);
 		exit(value);
-	} else {
-		//free_index(index);
-	}
+	} 
 	return 0;
 }
 
