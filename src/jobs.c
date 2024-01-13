@@ -219,16 +219,7 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 			p->cmd_index = sub_index(p->cmd_index,0,nb);
 			free_index(tmp);
 		}
-		if(strcmp(p->cmd_index->words[0],"cd")==0){
-			is_interne |= 1;
-			ret_code = cd(p->cmd_index);
-		} else if(strcmp(p->cmd_index->words[0],"pwd")==0){
-			is_interne |= 1;
-			ret_code = pwd(p->cmd_index);
-		} else if(strcmp(p->cmd_index->words[0], "?") == 0) {
-			is_interne |= 1;
-			ret_code = return_code();
-		} else if(strcmp(p->cmd_index->words[0], "exit") == 0){
+		if(strcmp(p->cmd_index->words[0], "exit") == 0){
 			is_interne |= 1;
 			ret_code = exit_shell(p->cmd_index);
 		} else if(strcmp(p->cmd_index->words[0], "kill")==0) {
@@ -237,6 +228,10 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 		} else if(strcmp(p->cmd_index->words[0], "jobs") == 0) {
 			is_interne |= 1;
 			ret_code = p_jobs(p->cmd_index);
+		} else if(strcmp(p->cmd_index->words[0],"cd")==0){
+			is_interne |= 1;
+			ret_code = cd(p->cmd_index);
+			//exit(ret_code);
 		} else if((pid = fork()) != 0) {
 
 			p->pid = pid;
@@ -261,8 +256,17 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 				close(pipes[j][1]);
 			}
 
-
+		if(strcmp(p->cmd_index->words[0],"pwd")==0){
+			//is_interne |= 1;
+			ret_code = pwd(p->cmd_index);
+			exit(ret_code);
+		} else if(strcmp(p->cmd_index->words[0], "?") == 0) {
+			//is_interne |= 1;
+			ret_code = return_code();
+			exit(ret_code);
+		} else {
 			launch_process(p, j->pgid, fg, shell_pgid, p->cmd_index);
+		}
 		}
 		dup2(in,STDIN_FILENO);
 		dup2(out,STDOUT_FILENO);
