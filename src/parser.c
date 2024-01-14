@@ -132,11 +132,11 @@ char *concat(w_index *pi){
 	
 }
 void add_word(w_index *pi,char *s){
-	pi->words=realloc(pi->words,(pi->size+1)*sizeof(char*));
-	pi->words[pi->size]=malloc((strlen(s)+1)*sizeof(char));
+	pi->words = realloc(pi->words,(pi->size+2) * sizeof(char *));
+	pi->words[pi->size] = malloc((strlen(s)+1) * sizeof(char));
 	strcpy(pi->words[pi->size],s);
-	pi->size=pi->size+1;
-	//pi->words[pi->size+1]=NULL;
+	pi->size = pi->size+1;
+	pi->words[pi->size] = NULL;
 }
 
 

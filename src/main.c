@@ -14,18 +14,6 @@
 #include "substitutions.h"
 #include "pipe.h"
 
-/*int main(){
-	w_index *pi=split_space("cmd1 -option");
-	int n=count_pipe(pi);
-	w_index **cmds = malloc(sizeof(w_index *) * (n + 1));
-	get_cmds_pipe(pi, cmds, n);
-	for(int i=0; i<=n;++i){
-		-free_index(cmds[i]);
-	}
-	-free_index(pi);
-	free(cmds);
-	return 0;
-}*/
 int main() {
 	int in=dup(0);
 	int out=dup(1);

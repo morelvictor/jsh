@@ -249,7 +249,7 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 				dup2(pipes[i-1][0], STDIN_FILENO);
 			}
 			if(i <= n_pipes-1) {
-				dup2(pipes[i][1],STDOUT_FILENO);
+				dup2(pipes[i][1], STDOUT_FILENO);
 			}
 			for(int j = 0; j < n_pipes; ++j) {
 				close(pipes[j][0]);
@@ -337,6 +337,10 @@ job *exec_command(char *cmd, w_index *index, int fg, job **jobs) {
 		free_job(new_job);
 
 	free_index(index);
+	for(int i=0; i<1024; ++i){
+		if(fds[i]==-1) break;
+		else close(fds[i]);
+	}
 	return new_job;
 }
 
