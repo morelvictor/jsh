@@ -66,6 +66,10 @@ int main() {
 			}
 			int status;
 			job *j = exec_command(input, index, fg, jobs);
+			if(j==NULL){
+				ret_code=1;
+				goto end_loop;
+			}
 			if(fg) {
 				if(exist(jobs, j)) {
 					do {

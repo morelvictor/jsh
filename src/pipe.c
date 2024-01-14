@@ -2,10 +2,13 @@
 
 int count_pipe(w_index *pi){
 	int acc=0;
+	int last=1;
 	for(int i=0; i<pi->size; ++i){
 		if(strcmp("|",pi->words[i])==0){
+			if(last==1 || i==pi->size -1) return -2;
 			++acc;
-		}
+			last=1;
+		}else last=0;
 	}
 	return acc;
 }
