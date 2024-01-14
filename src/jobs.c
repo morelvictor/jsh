@@ -233,6 +233,14 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 		} else if(strcmp(p->cmd_index->words[0], "kill")==0) {
 			is_interne |= 1;
 			ret_code = kill_job(p->cmd_index);
+		} else if(strcmp(p->cmd_index->words[0], "bg") == 0) {
+			is_interne |= 1;
+			ret_code = bg_cmd(p->cmd_index);
+			
+		} else if(strcmp(p->cmd_index->words[0], "fg") == 0) {
+			is_interne |= 1;
+			ret_code = fg_cmd(p->cmd_index);
+			
 		} else if(strcmp(p->cmd_index->words[0], "jobs") == 0) {
 			is_interne |= 1;
 			ret_code = p_jobs(p->cmd_index);

@@ -7,14 +7,12 @@ int cd(w_index *index) {
 		nouv = getenv("HOME"); //getenv recup val associee a une var d'env donnee
 		if (nouv == NULL) {
 			fprintf(stderr, "Erreur : $HOME n'est pas défini.\n");
-			//free_index(index);
 			return 1;
 		}
 	} else if (strcmp(index->words[1], "-") == 0) {
 		nouv = getenv("OLDPWD");
 		if (nouv == NULL) {
 			fprintf(stderr, "Erreur : le répertoire précédent n'est pas défini.\n");
-			//free_index(index);
 			return 1;
 		}
 	} else {
@@ -24,23 +22,19 @@ int cd(w_index *index) {
 	if (chdir(nouv) == 0) {
 		setenv("OLDPWD", getenv("PWD"), 1);
 		setenv("PWD", nouv, 1);
-		//free_index(index);
 		return 0;
 	} else {
 		perror("chdir");
-		//free_index(index);
 		return 1;
 	}
 }
 
 int p_jobs(w_index *index) {
-	//free_index(index);
 	return print_jobs(jobs);
 } 
 
 int pwd(w_index *index) {
 	char poss[2028];
-	//free_index(index);
 	if (getcwd(poss, sizeof(poss)) != NULL) {
 		printf("%s\n", poss);
 		return 0;
@@ -131,12 +125,53 @@ int kill_job(w_index *index){
 			target=atoi(&index->words[2][1]);
 		}
 	}
-	//free_index(index);
 	if(send_signal(signal, target, job_or_not)==1) return 1;
 	return 0;
 
 }
 
+int bg_cmd(w_index *index) {
+	int target = 0;
+	if(index->size < 2) {
+		return 1;
+	}
+	if(index->words[1][0] != '%') {
+		return 1;
+	}
+	target = atoi(&index->words[1][1]);
+	if(send_signal(SIGCONT, target, 1) == 1) return 1;
+	return 0;
+}
 
+int fg_cmd(w_index *index) {
+	int target = 0;
+	int status;
+	if(index->size < 2) {
+		return 1;
+	}
+	if(index->words[1][0] != '%') {
+		return 1;
+	}
+	target = atoi(&index->words[1][1]);
+	job *j = jobs[target - 1];
+	if(send_signal(SIGCONT, target, 1) == 1) return 1;
+	j->fg = 1;
+	j->state = RUNNING;
+	tcsetpgrp(STDERR_FILENO, j->pgid);
+	
+	do {
+		update_job(stderr, jobs, j, j->id);
+	} while(j->state == RUNNING && j->fg);
+	if(j->fg) {
+		status = j->pipeline->status;
+		if(WIFEXITED(status)) {
+			ret_code = WEXITSTATUS(status);
+		}
+
+		remove_job(jobs, j);
+	}
+	tcsetpgrp(STDERR_FILENO,getpid());
+	return 0;
+}
 
 
