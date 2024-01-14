@@ -79,8 +79,8 @@ void get_cmds_sub(w_index **cmds, w_index *pi, int *t, int *p, int n){
 int launch_cmd(w_index *pi){
 	w_index *tmp=NULL;
 	if(is_substituted(pi)>0){
+		//w_index *tmp2=copy_index(pi);
 		tmp=substitute(pi);
-		free_index(pi);
 	}
 	else tmp=pi;
 
@@ -128,7 +128,7 @@ int is_substituted(w_index *pi){
 	return n;
 }
 
-w_index *substitute(w_index *pi){
+w_index *substitute(w_index *pi/*, int rec*/){
 	const int n=is_substituted(pi);
 	if(n==-1 || n==-2) return NULL;
 	if(n==0) return pi;
@@ -161,7 +161,8 @@ w_index *substitute(w_index *pi){
 		free_index(cmds[i]);
 	}
 	free(cmds);
-	free_index(pi);
+	/*if(!rec)*/
+		//free_index(pi);
 	return first;
 }
 /*int main(){

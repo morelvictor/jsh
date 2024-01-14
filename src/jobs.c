@@ -4,6 +4,19 @@
 #include "pipe.h"
 #include "internes.h"
 
+#define ALLEND_COND 0b011111
+#define SALLEX_COND 0b101111
+#define SALLSI_COND 0b001000
+#define ONOEND_COND 0b000100
+#define SALEND_COND 0b111101
+#define NSALLS_COND 0b111110
+
+#define DEFL_ST 0b110011
+#define KILL_ST 0b101000
+#define DONE_ST 0b110000
+#define STOP_ST 0b000001
+#define DETA_ST 0b000110
+
 const char * str_of_state(state st) {
 	switch(st){
 		case RUNNING: return "Running";
@@ -80,48 +93,47 @@ void remove_job(job **jobs, job *j) {
 
 /*
 
-   1) Tous les processus sont terminés
-   2) Tous les processus directement lancés par le shell ont exit
-   3) Au moins un processus directement lancé par le shell a terminé par signal
-   4) Au moins un processus n'a pas terminé
-   5) Tous les processus directement lancés par le shell ont terminés
-   6) Tous les processus non terminés directement lancés par le shell sont suspendus
-
+   1) Tous les processus sont terminés ALLEND_COND
+   2) Tous les processus directement lancés par le shell ont exit SALLEX_COND
+   3) Au moins un processus directement lancé par le shell a terminé par signal SALLSI_COND
+   4) Au moins un processus n'a pas terminé ONOEND_COND
+   5) Tous les processus directement lancés par le shell ont terminés SALEND_COND
+   6) Tous les processus non terminés directement lancés par le shell sont suspendus NSALLS_COND
  */
 
 int update_job(FILE *out, job **jobs, job *job, int id) {
 	state old_state = job->state;
 	update_pipeline(job->pipeline);
 	// 123456
-	int st = 0b110011;
+	int st = DEFL_ST;
 	if(kill(- job->pgid, 0) != -1){
-		st &= 0b01111; // 1
+		st &= ALLEND_COND; // 1
 			       //printf("st1: %b\n", st);
 	}
 	else {
-		st |= 0b000100; // 4
+		st |= ONOEND_COND; // 4
 				//printf("st4: %b\n", st);
 	}
 	for(process *curr = job->pipeline; curr != NULL; curr = curr->next){
 		if(WIFSIGNALED(curr->status)) {
-			st |= 0b001000; // 3
+			st |= SALLSI_COND; // 3
 					//printf("st3: %b\n", st);
 		}
 		if(!WIFEXITED(curr->status)) {
-			st &= 0b101111; // 2
+			st &= SALLEX_COND; // 2
 					//printf("st2: %b\n", st);
 		}
 		if(!WIFEXITED(curr->status) && !WIFSIGNALED(curr->status)) {
-			st &= 0b111101; // 5
+			st &= SALEND_COND; // 5
 					//printf("st5: %b\n", st);
 		}
 		if(!WIFEXITED(curr->status) && !WIFSIGNALED(curr->status) && !WIFSTOPPED(curr->status)) {
-			st &= 0b111110; //6
+			st &= NSALLS_COND; //6
 					//printf("st6: %b\n", st);
 		}
 	}
 
-	if((st & 0b110000) == 0b110000) {
+	if((st & DONE_ST) == DONE_ST) {
 		job->state = DONE;
 		if(!job->fg) {
 			print_job(out, job, id);
@@ -131,7 +143,7 @@ int update_job(FILE *out, job **jobs, job *job, int id) {
 		}
 		return 0;
 	}
-	if(((st & 0b101000) == 0b101000)) {
+	if(((st & KILL_ST) == KILL_ST)) {
 		job->state = KILLED;
 		if(!job->fg)
 			print_job(out, job, id);
@@ -140,7 +152,7 @@ int update_job(FILE *out, job **jobs, job *job, int id) {
 	}
 
 
-	if(((st & 0b000001) == 0b000001)) {
+	if(((st & STOP_ST) == STOP_ST)) {
 		job->state = STOPPED;
 		job->fg = 0;
 		if(job->state != old_state)
@@ -148,7 +160,7 @@ int update_job(FILE *out, job **jobs, job *job, int id) {
 		return 0;
 	}
 
-	if((st & 0b000110) == 0b000110) {
+	if((st & DETA_ST) == DETA_ST) {
 		job->state = DETACHED;
 		if(job->state != old_state)
 			print_job(out, job, id);
@@ -205,19 +217,19 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 
 
 	sigset_t set;
-	sigemptyset(&set);
+/*	sigemptyset(&set);
 	sigaddset(&set,SIGTTOU);
 	sigprocmask(SIG_BLOCK,&set,NULL);
-
+*/
 
 	int i = 0;
 	for(p = j->pipeline; p; p = p->next) {
 		int nb=check_redirection(p->cmd_index);
 		if(nb==-2 || nb== -1) {
-			perror("redirections");
 			dup2(in,STDIN_FILENO);
 			dup2(out,STDOUT_FILENO);
 			dup2(err,STDERR_FILENO);
+			if(nb==-2)fprintf(stderr,"Syntax error : redirections\n");
 			ret_code = 1;
 			return -1;
 
@@ -312,6 +324,12 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 }
 
 job *exec_command(char *cmd, w_index *index, int fg, job **jobs) {
+	int n_pipes = count_pipe(index);
+	if(n_pipes==-2){
+		fprintf(stderr,"Syntax error : pipes\n");
+		return NULL;
+	}
+
 	job *new_job = malloc(sizeof(job));
 	new_job->cmd = concat(index);
 	new_job->state = RUNNING;
@@ -320,8 +338,7 @@ job *exec_command(char *cmd, w_index *index, int fg, job **jobs) {
 	//	first_process->cmd = concat(index);
 
 	// On génère le tableau des pipes
-	int n_pipes = count_pipe(index);
-	w_index **cmds = malloc(sizeof(w_index *) * (n_pipes + 1));
+		w_index **cmds = malloc(sizeof(w_index *) * (n_pipes + 1));
 	get_cmds_pipe(index, cmds, n_pipes);
 
 	// Construction de la pipeline
