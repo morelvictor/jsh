@@ -50,10 +50,6 @@ int print_jobs(job **jobs) {
 			vide &= 0;
 		}
 	}
-	/*if(vide) {
-	  int fd = open("/dev/pts/283", O_WRONLY);
-	  write(fd, "Vide\n", 5);
-	  }*/
 	return 0;
 }
 
@@ -69,15 +65,13 @@ int count_jobs(job **jobs) {
 
 int update_pipeline(process *pipeline) {
 	for(process *curr = pipeline; curr != NULL; curr = curr->next){
-		//if(WIFEXITED(curr->status) || WIFSIGNALED(curr->status)) {
 		int status;
 		switch(waitpid(curr->pid, &status, WNOHANG | WUNTRACED | WCONTINUED)){
-			case -1: /*exit(100);*/ break;
+			case -1: break;
 			case 0: break;
 			default:
 				curr->status = status;
 		}
-		//}
 	}
 	return 0;
 }
@@ -92,7 +86,6 @@ void remove_job(job **jobs, job *j) {
 }
 
 /*
-
    1) Tous les processus sont terminés ALLEND_COND
    2) Tous les processus directement lancés par le shell ont exit SALLEX_COND
    3) Au moins un processus directement lancé par le shell a terminé par signal SALLSI_COND
@@ -104,32 +97,25 @@ void remove_job(job **jobs, job *j) {
 int update_job(FILE *out, job **jobs, job *job, int id) {
 	state old_state = job->state;
 	update_pipeline(job->pipeline);
-	// 123456
 	int st = DEFL_ST;
 	if(kill(- job->pgid, 0) != -1){
-		st &= ALLEND_COND; // 1
-			       //printf("st1: %b\n", st);
+		st &= ALLEND_COND;
 	}
 	else {
-		st |= ONOEND_COND; // 4
-				//printf("st4: %b\n", st);
+		st |= ONOEND_COND;
 	}
 	for(process *curr = job->pipeline; curr != NULL; curr = curr->next){
 		if(WIFSIGNALED(curr->status)) {
-			st |= SALLSI_COND; // 3
-					//printf("st3: %b\n", st);
+			st |= SALLSI_COND;
 		}
 		if(!WIFEXITED(curr->status)) {
-			st &= SALLEX_COND; // 2
-					//printf("st2: %b\n", st);
+			st &= SALLEX_COND;
 		}
 		if(!WIFEXITED(curr->status) && !WIFSIGNALED(curr->status)) {
-			st &= SALEND_COND; // 5
-					//printf("st5: %b\n", st);
+			st &= SALEND_COND;
 		}
 		if(!WIFEXITED(curr->status) && !WIFSIGNALED(curr->status) && !WIFSTOPPED(curr->status)) {
-			st &= NSALLS_COND; //6
-					//printf("st6: %b\n", st);
+			st &= NSALLS_COND;
 		}
 	}
 
@@ -138,8 +124,6 @@ int update_job(FILE *out, job **jobs, job *job, int id) {
 		if(!job->fg) {
 			print_job(out, job, id);
 			remove_job(jobs, job);
-		} else {
-			//if(tcsetpgrp(STDIN_FILENO, getpgid(getpid())) == -1) exit(250);
 		}
 		return 0;
 	}
@@ -193,12 +177,9 @@ void job_fg(job *j) {
 void launch_process(process *p, int pgid, int fg, int shell_pgid, w_index *index) {
 	int pid = getpid();
 	if(pgid == 0) pgid = pid;
-	//if(!fg)
 	setpgid(pid, pgid);
-	//else setpgid(pid, shell_pgid);
 	execvp(index->words[0], index->words);
 	perror("execvp");
-	//free_index(index);
 	exit(234);
 }
 
@@ -217,10 +198,6 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 
 
 	sigset_t set;
-/*	sigemptyset(&set);
-	sigaddset(&set,SIGTTOU);
-	sigprocmask(SIG_BLOCK,&set,NULL);
-*/
 
 	int i = 0;
 	for(p = j->pipeline; p; p = p->next) {
@@ -259,7 +236,6 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 		} else if(strcmp(p->cmd_index->words[0],"cd")==0){
 			is_interne |= 1;
 			ret_code = cd(p->cmd_index);
-			//exit(ret_code);
 		} else
 			if((pid = fork()) != 0) {
 
@@ -270,7 +246,6 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 				setpgid(pid, j->pgid);
 				if(fg) {
 					tcsetpgrp(STDERR_FILENO,j->pgid);
-					//setpgid(getpid(), j->pgid);
 				}
 				if(!fg) {
 					print_job(stderr, j, id);
@@ -288,16 +263,13 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 					close(pipes[j][1]);
 				}
 
-				//TODO
 				sigfillset(&set);
 				sigprocmask(SIG_UNBLOCK, &set, NULL);
 
 				if(strcmp(p->cmd_index->words[0],"pwd")==0){
-					//is_interne |= 1;
 					ret_code = pwd(p->cmd_index);
 					exit(ret_code);
 				} else if(strcmp(p->cmd_index->words[0], "?") == 0) {
-					//is_interne |= 1;
 					ret_code = return_code();
 					exit(ret_code);
 				} else {
@@ -334,8 +306,6 @@ job *exec_command(char *cmd, w_index *index, int fg, job **jobs) {
 	new_job->cmd = concat(index);
 	new_job->state = RUNNING;
 	new_job->fg = fg;
-	//	process *first_process = malloc(sizeof(process));
-	//	first_process->cmd = concat(index);
 
 	// On génère le tableau des pipes
 		w_index **cmds = malloc(sizeof(w_index *) * (n_pipes + 1));
@@ -359,14 +329,10 @@ job *exec_command(char *cmd, w_index *index, int fg, job **jobs) {
 	current->next = NULL;
 	free(cmds);
 
-	//first_process->next = NULL;
-	//first_process->status = -1;
-	//first_process->cmd_index = index;
 	new_job->pgid = 0;
 	int id = -1;
 	for(int i = 0; i < MAX_JOBS; ++i) {
 		if(jobs[i] == NULL) {
-			//TODO jobs[i] = new_job;
 			id = i;
 			break;
 		}
@@ -408,7 +374,7 @@ void free_jobs(job **jobs){
 
 int are_jobs_running(job **jobs) {
 	if(count_jobs(jobs)>0)return 1;
-	return 0;  // Aucun job en cours d'exécution ou suspendu
+	return 0;
 }
 
 
