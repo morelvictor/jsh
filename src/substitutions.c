@@ -1,6 +1,7 @@
 #include "substitutions.h"
 #include "parser.h"
-
+#include "jobs.h"
+#include "shell.h"
 
 
 int count_substitutions(w_index* pi){
@@ -9,8 +10,9 @@ int count_substitutions(w_index* pi){
 	int acc=0;
 	for(int i=0; i<pi->size; ++i){
 		if(strcmp("<(",pi->words[i])==0){
-			if(acc==0) ++n;	
+			if(acc==0) ++n;
 			++acc;
+			
 		}
 		if(strcmp(")",pi->words[i])==0) {
 			if(acc==1) ++m;
@@ -37,12 +39,12 @@ void pos_open_sub(w_index *pi, int *t){
 		}
 	}
 	/*int acc_t=0;
-	for(int i=0; i<pi->size; ++i){
-		if(strcmp("<(",pi->words[i])==0){
-			t[acc_t]=i;
-			++acc_t;
-		}
-	}*/
+	  for(int i=0; i<pi->size; ++i){
+	  if(strcmp("<(",pi->words[i])==0){
+	  t[acc_t]=i;
+	  ++acc_t;
+	  }
+	  }*/
 }
 void pos_close_sub(w_index *pi,int *t){
 	int acc_t=0;	
@@ -61,22 +63,25 @@ void pos_close_sub(w_index *pi,int *t){
 	}
 
 	/*int acc_t=0;	
-	for(int i=0; i<pi->size; ++i){
-		if(strcmp(")",pi->words[i])==0){
-			t[acc_t]=i;
-			++acc_t;
-		}
-	}*/
+	  for(int i=0; i<pi->size; ++i){
+	  if(strcmp(")",pi->words[i])==0){
+	  t[acc_t]=i;
+	  ++acc_t;
+	  }
+	  }*/
 }
 void get_cmds_sub(w_index **cmds, w_index *pi, int *t, int *p, int n){
 	for(int i=0; i<n; ++i){
 		cmds[i]=sub_index(pi,t[i]+1,p[i]);
 	}
-	
+
 }
 int launch_cmd(w_index *pi){
 	w_index *tmp=NULL;
-	if(is_substituted(pi)>0)tmp=substitute(pi);
+	if(is_substituted(pi)>0){
+		tmp=substitute(pi);
+		free_index(pi);
+	}
 	else tmp=pi;
 
 	int out=dup(1);
@@ -85,6 +90,8 @@ int launch_cmd(w_index *pi){
 		perror("pipe failed");
 		exit(1);
 	}
+	
+
 	int pid=fork();
 	switch(pid){
 		case -1 : 
@@ -95,19 +102,20 @@ int launch_cmd(w_index *pi){
 			dup2(fd[1],1);
 			close(fd[1]);
 			close(out);
-			execvp(tmp->words[0],tmp->words);
-			perror("execvp");
+			char *cmd=concat(tmp);
+			exec_command(cmd, tmp, 1, jobs);
+			free(cmd);
 			exit(1);
 		default : 
 			waitpid(pid,NULL,0);
-			//read(fd[0],NULL,0);
 			dup2(out,1);
 			close(fd[1]);
 			close(out);
 			return fd[0];
-			
-			
+
+
 	}
+
 }
 
 //-1 : FAILED
@@ -126,15 +134,15 @@ w_index *substitute(w_index *pi){
 	if(n==0) return pi;
 	int open[n];
 	int close[n];
-	int *fds=malloc(n*sizeof(int));
 	pos_open_sub(pi,open);
 	pos_close_sub(pi,close);
 	w_index *first=sub_index(pi,0,open[0]);
 	w_index **cmds=malloc(n*sizeof(w_index *));
 	get_cmds_sub(cmds,pi,open,close,n);
- 	for(int i=0; i<n; ++i){
+	for(int i=0; i<n; ++i){
 		fds[i]=launch_cmd(cmds[i]);
 	}
+	fds[n]=-1;
 	int acc=0;
 	int i=open[0];
 	while(i<pi->size){
@@ -149,24 +157,28 @@ w_index *substitute(w_index *pi){
 			++i;
 		}
 	}
-	w_index *yeah=split_space(concat(first));
-	return yeah;
+	for(int i=0; i<n; ++i){
+		free_index(cmds[i]);
+	}
+	free(cmds);
+	free_index(pi);
+	return first;
 }
 /*int main(){
-	w_index *pi=split_space("diff <( ls . ) <( cat blob.txt )");
-	printf("%s\n",concat(pi));
-	w_index *ti=substitute(pi);
-	puts("");
-	printf("%s\n",concat(ti));
-	puts("");
-	if(fork()==0){
-		char *args[]={"cat",ti->words[1],NULL};
-		execvp("cat",args);
-		execvp(ti->words[0],ti->words);
-		perror("execvp");
-	}else{
-		wait(NULL);
-	}
-	
-	exit(0);
-}*/
+  w_index *pi=split_space("diff <( ls . ) <( cat blob.txt )");
+  printf("%s\n",concat(pi));
+  w_index *ti=substitute(pi);
+  puts("");
+  printf("%s\n",concat(ti));
+  puts("");
+  if(fork()==0){
+  char *args[]={"cat",ti->words[1],NULL};
+  execvp("cat",args);
+  execvp(ti->words[0],ti->words);
+  perror("execvp");
+  }else{
+  wait(NULL);
+  }
+
+  exit(0);
+  }*/

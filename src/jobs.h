@@ -44,6 +44,7 @@ typedef struct job {
 int update_jobs(FILE *, job **);
 int update_job(FILE*, job **, job *, int);
 int print_jobs(job **);
+int exist(job **jobs, job *j);
 job *exec_command(char *, w_index *, int, job **);
 void free_process(process *);
 void free_job(job *);

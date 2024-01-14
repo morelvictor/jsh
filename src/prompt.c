@@ -1,12 +1,12 @@
 #include "prompt.h"
 
-char *prompt=NULL;
+//char *prompt=NULL;
 
-int update_prompt(int jobs) {
+int update_prompt(char *prompt, int jobs) {
 	char *path=malloc(256);
 	if(getcwd(path,256)==NULL) {
 		return -1;
-	}	
+	}
 	
 	int diff=0;
 	int len_jobs=1; // minimum 0 jobs -> 0 est le longueur 1
