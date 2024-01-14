@@ -15,6 +15,7 @@
 #include "pipe.h"
 
 int main() {
+
 	int in=dup(0);
 	int out=dup(1);
 	int err_out=dup(2);
@@ -25,6 +26,7 @@ int main() {
 	int res=update_prompt(prompt, 0);
 	rl_initialize();
 	rl_outstream=stderr;
+	ignore_signals();
 	extern job *jobs[MAX_JOBS];
 	memset(jobs, 0, MAX_JOBS * sizeof(job *));
 	int fg = 1;
@@ -81,6 +83,7 @@ int main() {
 					} else {
 						//setpgid()
 					}
+					tcsetpgrp(STDERR_FILENO,getpid());
 				}
 			}
 		}
