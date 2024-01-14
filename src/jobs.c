@@ -181,8 +181,9 @@ void job_fg(job *j) {
 void launch_process(process *p, int pgid, int fg, int shell_pgid, w_index *index) {
 	int pid = getpid();
 	if(pgid == 0) pgid = pid;
-	if(!fg) setpgid(pid, pgid);
-	else setpgid(pid, shell_pgid);
+	//if(!fg)
+	setpgid(pid, pgid);
+	//else setpgid(pid, shell_pgid);
 	execvp(index->words[0], index->words);
 	perror("execvp");
 	//free_index(index);
@@ -201,6 +202,13 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 	for(int i = 0; i < n_pipes; i++) {
 		pipe(pipes[i]);
 	}
+
+
+	sigset_t set;
+	sigemptyset(&set);
+	sigaddset(&set,SIGTTOU);
+	sigprocmask(SIG_BLOCK,&set,NULL);
+
 
 	int i = 0;
 	for(p = j->pipeline; p; p = p->next) {
@@ -232,49 +240,57 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 			is_interne |= 1;
 			ret_code = cd(p->cmd_index);
 			//exit(ret_code);
-		} else if((pid = fork()) != 0) {
+		} else
+			if((pid = fork()) != 0) {
 
-			p->pid = pid;
-			if(!j->pgid) {
-				j->pgid = pid;
-			}
-			setpgid(pid, j->pgid);
-			if(!fg) {
-				print_job(stderr, j, id);
-			}
-			//free_index(index);
+				p->pid = pid;
+				if(!j->pgid) {
+					j->pgid = pid;
+				}
+				setpgid(pid, j->pgid);
+				if(fg) {
+					tcsetpgrp(STDERR_FILENO,j->pgid);
+					//setpgid(getpid(), j->pgid);
+				}
+				if(!fg) {
+					print_job(stderr, j, id);
+				}
 
-		} else {
-			if(i > 0) {
-				dup2(pipes[i-1][0], STDIN_FILENO);
-			}
-			if(i <= n_pipes-1) {
-				dup2(pipes[i][1], STDOUT_FILENO);
-			}
-			for(int j = 0; j < n_pipes; ++j) {
-				close(pipes[j][0]);
-				close(pipes[j][1]);
-			}
+			} else {
+				if(i > 0) {
+					dup2(pipes[i-1][0], STDIN_FILENO);
+				}
+				if(i <= n_pipes-1) {
+					dup2(pipes[i][1], STDOUT_FILENO);
+				}
+				for(int j = 0; j < n_pipes; ++j) {
+					close(pipes[j][0]);
+					close(pipes[j][1]);
+				}
 
-		if(strcmp(p->cmd_index->words[0],"pwd")==0){
-			//is_interne |= 1;
-			ret_code = pwd(p->cmd_index);
-			exit(ret_code);
-		} else if(strcmp(p->cmd_index->words[0], "?") == 0) {
-			//is_interne |= 1;
-			ret_code = return_code();
-			exit(ret_code);
-		} else {
-			launch_process(p, j->pgid, fg, shell_pgid, p->cmd_index);
-		}
-		}
+				//TODO
+				sigfillset(&set);
+				sigprocmask(SIG_UNBLOCK, &set, NULL);
+
+				if(strcmp(p->cmd_index->words[0],"pwd")==0){
+					//is_interne |= 1;
+					ret_code = pwd(p->cmd_index);
+					exit(ret_code);
+				} else if(strcmp(p->cmd_index->words[0], "?") == 0) {
+					//is_interne |= 1;
+					ret_code = return_code();
+					exit(ret_code);
+				} else {
+					launch_process(p, j->pgid, fg, shell_pgid, p->cmd_index);
+				}
+			}
 		dup2(in,STDIN_FILENO);
 		dup2(out,STDOUT_FILENO);
 		dup2(err,STDERR_FILENO);
 		++i;
 	}
 
-	
+
 	if(!is_interne && pid) {
 		for(i = 0; i < n_pipes; i++) {
 			close(pipes[i][0]);
