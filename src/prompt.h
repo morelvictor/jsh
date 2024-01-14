@@ -7,7 +7,6 @@
 #include <string.h>
 #include <unistd.h>
 
-//extern char * prompt;
 extern int update_prompt(char *, int);
 
 #endif

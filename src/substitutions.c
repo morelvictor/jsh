@@ -38,13 +38,6 @@ void pos_open_sub(w_index *pi, int *t){
 			--acc;
 		}
 	}
-	/*int acc_t=0;
-	  for(int i=0; i<pi->size; ++i){
-	  if(strcmp("<(",pi->words[i])==0){
-	  t[acc_t]=i;
-	  ++acc_t;
-	  }
-	  }*/
 }
 void pos_close_sub(w_index *pi,int *t){
 	int acc_t=0;	
@@ -62,13 +55,6 @@ void pos_close_sub(w_index *pi,int *t){
 		}
 	}
 
-	/*int acc_t=0;	
-	  for(int i=0; i<pi->size; ++i){
-	  if(strcmp(")",pi->words[i])==0){
-	  t[acc_t]=i;
-	  ++acc_t;
-	  }
-	  }*/
 }
 void get_cmds_sub(w_index **cmds, w_index *pi, int *t, int *p, int n){
 	for(int i=0; i<n; ++i){
@@ -79,7 +65,6 @@ void get_cmds_sub(w_index **cmds, w_index *pi, int *t, int *p, int n){
 int launch_cmd(w_index *pi){
 	w_index *tmp=NULL;
 	if(is_substituted(pi)>0){
-		//w_index *tmp2=copy_index(pi);
 		tmp=substitute(pi);
 	}
 	else tmp=pi;
@@ -128,7 +113,7 @@ int is_substituted(w_index *pi){
 	return n;
 }
 
-w_index *substitute(w_index *pi/*, int rec*/){
+w_index *substitute(w_index *pi){
 	const int n=is_substituted(pi);
 	if(n==-1 || n==-2) return NULL;
 	if(n==0) return pi;
@@ -161,25 +146,5 @@ w_index *substitute(w_index *pi/*, int rec*/){
 		free_index(cmds[i]);
 	}
 	free(cmds);
-	/*if(!rec)*/
-		//free_index(pi);
 	return first;
 }
-/*int main(){
-  w_index *pi=split_space("diff <( ls . ) <( cat blob.txt )");
-  printf("%s\n",concat(pi));
-  w_index *ti=substitute(pi);
-  puts("");
-  printf("%s\n",concat(ti));
-  puts("");
-  if(fork()==0){
-  char *args[]={"cat",ti->words[1],NULL};
-  execvp("cat",args);
-  execvp(ti->words[0],ti->words);
-  perror("execvp");
-  }else{
-  wait(NULL);
-  }
-
-  exit(0);
-  }*/

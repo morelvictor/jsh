@@ -16,7 +16,7 @@ void get_cmds_sub(w_index **, w_index *, int *, int *, int );
 int launch_cmd(w_index *);
 int launch_test(w_index *);
 int is_substituted(w_index *);
-w_index * substitute(w_index * /*, int*/);
+w_index * substitute(w_index *);
 
 #endif
 

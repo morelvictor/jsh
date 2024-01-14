@@ -52,7 +52,7 @@ int main() {
 				goto end_loop;
 			}
 			if(n>0) {
-				w_index *ti=substitute(index/*, 0*/);
+				w_index *ti=substitute(index);
 				if(ti==NULL) goto end_loop;
 				free_index(index);
 				index=ti;
@@ -65,7 +65,6 @@ int main() {
 				index = sub_index(index, 0, index->size - 1);
 				free_index(tmp);
 				current_index=index;
-				//print_index(index);
 			}
 			int status;
 			job *j = exec_command(input, index, fg, jobs);
@@ -80,37 +79,27 @@ int main() {
 					} while(j->state == RUNNING && j->fg);
 					if(j->fg) {
 						status = j->pipeline->status;
-						//printf("%d\n", status);
 						if(WIFEXITED(status)) {
-							//	printf("Coucou\n");
 							ret_code = WEXITSTATUS(status);
 						}
 
 						remove_job(jobs, j);
-					} else {
-						//setpgid()
 					}
 					tcsetpgrp(STDERR_FILENO,getpid());
 				}
 			}
 		}
-		//free_index(index);
-		//}
 end_loop:
 		char buff[8];
 		sprintf(buff, "%d", ret_code);
 		setenv("?", buff, 1);
-		//}
 		dup2(in,0);
 		dup2(out,1);
 		dup2(err_out,2);
-		//peut mieux faire ici, mieux que remettre les 3 (2 sont inutiles)
 		update_jobs(stderr, jobs);
 		update_prompt(prompt, count_jobs(jobs));
 		fg = 1;
 		}
-//free_jobs(jobs);
-//free(jobs);
 char *last = getenv("?");
 return last == NULL ? 0 : atoi(last);
 }

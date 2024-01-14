@@ -4,7 +4,7 @@ int cd(w_index *index) {
 	char *nouv;
 
 	if (index->words[1] == NULL) {
-		nouv = getenv("HOME"); //getenv recup val associee a une var d'env donnee
+		nouv = getenv("HOME");
 		if (nouv == NULL) {
 			fprintf(stderr, "Erreur : $HOME n'est pas défini.\n");
 			return 1;
@@ -54,9 +54,8 @@ int return_code() {
 }
 
 
-//c est la fonction pour kill
 int send_signal(int signal, int target, int job_or_not){
-	if (job_or_not==1) {//envoie du signal au job de num target
+	if (job_or_not==1) {
 		if(jobs[target-1]!=NULL){
 			if (kill(-jobs[target-1]->pgid, signal) == -1) {
 				perror("kill");
@@ -79,7 +78,6 @@ int exit_shell(w_index *index) {
 	// Vérifier si des jobs sont en cours d'exécution ou suspendus
 	if (are_jobs_running(jobs)) {
 		fprintf(stderr, "There is %d job.\n", count_jobs(jobs));
-		//free_index(index);
 		return 1;
 	}
 

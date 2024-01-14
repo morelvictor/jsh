@@ -12,16 +12,12 @@ void free_index(w_index *pi) {
 }
 
 void print_index(w_index *pi) {
-	//printf("nbr: %zu\n", pi->size);
-	//printf("words:\n");
 	for(size_t i = 0; i < pi->size; ++i) {
 		printf("%s\n", pi->words[i]);
 	}
 }
 
 void print_index_in_line(w_index *pi) {
-	//printf("nbr: %zu\n", pi->size);
-	//printf("words:\n");
 	for(size_t i = 0; i < pi->size; ++i) {
 		printf("%s ", pi->words[i]);
 	}
