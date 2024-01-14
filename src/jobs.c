@@ -217,10 +217,10 @@ int launch_job(job *j, int fg, w_index *index, int id, int n_pipes) {
 
 
 	sigset_t set;
-	sigemptyset(&set);
+/*	sigemptyset(&set);
 	sigaddset(&set,SIGTTOU);
 	sigprocmask(SIG_BLOCK,&set,NULL);
-
+*/
 
 	int i = 0;
 	for(p = j->pipeline; p; p = p->next) {

@@ -47,11 +47,14 @@ int main() {
 
 		if(index->size != 0) {
 			int n=is_substituted(index);
-			if(n==-1 || n==-2) goto end_loop;
+			if(n==-1 || n==-2){ 
+				if(n==-2) fprintf(stderr,"Syntax error : substitutions\n");
+				goto end_loop;
+			}
 			if(n>0) {
-				w_index *ti=substitute(index);
+				w_index *ti=substitute(index/*, 0*/);
 				if(ti==NULL) goto end_loop;
-				//-free_index(index);
+				free_index(index);
 				index=ti;
 			}
 

@@ -94,6 +94,18 @@ w_index *sub_index(w_index *i, size_t deb, size_t fin) {
   return acc;
 }
 
+w_index *copy_index(w_index *pi){
+	w_index *new_index = malloc(sizeof(w_index));
+	new_index->size = pi->size;
+	new_index->words = malloc((pi->size + 1) * sizeof(char *));
+	for(int i = 0; i < pi->size; ++i) {
+		new_index->words[i] = malloc(strlen(pi->words[i]) + 1);
+		strcpy(new_index->words[i], pi->words[i]);
+	}
+	new_index->words[pi->size] = NULL;
+	return new_index;
+}
+
 int is_slash(int c) {
 	return c == '/';
 }

@@ -66,11 +66,11 @@ int send_signal(int signal, int target, int job_or_not){
 	} else if (job_or_not==0){
 		if(kill(target, signal) == -1) {
 			perror("kill");
-			return 1;
+			return 2;
 		}
 	} else {
 		fprintf(stderr, "La cible est invalide : %d\n", target);
-		return 1;
+		return 3;
 	}
 	return 0;
 }
