@@ -1,4 +1,5 @@
 ARCHITECTURE
+```
 .
 ├── ARCHITECTURE.md
 ├── AUTHORS.md
@@ -25,7 +26,7 @@ ARCHITECTURE
 │   └── substitutions.h
 ├── SUJET.md
 └── test.sh
-
+```
 INTERNES:
 Implémentation des commandes internes
 jobs -t n’est pas implémenté
